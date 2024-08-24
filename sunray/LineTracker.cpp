@@ -112,7 +112,7 @@ void rotateToTarget() {
       if (CurrRot == 0) angleToTargetPrecise = true;                          //MrTree Step out of everything when angle is precise... and we stopped rotating 
     }
     //add option to disable and start rotsatating even if still moving
-    if (fabs(CurrSpeed) >= 0.1) angular = 0;                //MrTree reset angular if current speed is over given value (still deccelerating)
+    if (fabs(CurrSpeed) > 0.0) angular = 0;                //MrTree reset angular if current speed is over given value (still deccelerating)
     
     
 }
@@ -150,11 +150,11 @@ void stanleyTracker() {
       p = stanleyTrackingSlowP;                                     //STANLEY_CONTROL_P_SLOW;
     }
   }
-                                                                                                                                //MrTree
+                                                                                                                            //MrTree
   angular =  p * trackerDiffDelta + atan2(k * lateralError, (0.001 + fabs(CurrSpeed)));       //MrTree, use actual speed correct for path errors
   // restrict steering angle for stanley  (not required anymore after last state estimation bugfix)
   angular = max(-PI/6, min(PI/6, angular)); //MrTree still used here because of gpsfix jumps that would lead to an extreme rotation speed
-
+  //if (!maps.trackReverse && motor.linearCurrSet < 0) angular *= -1;   // it happens that mower is reversing without going to a map point (obstacle escapes) but trying to get straight to the next point angle (transition angle), for this case angular needs to be reversed
   //After all, we want to use stanley for transition angles as well, too have a smooth operation between points without coming to a complete stop
   //For that we will scale down the actual linear speed set dependent to the angle difference to the NEXT targetpoint, we need also to deactivate distance ramp for nextangletotargetfits = true
   //so distanceramp is basically just a function for !angletotargetfits and can be moved into this function permanent without possibility to activate or deactivate? This would also eliminate the need in distanceramp to try and compensate small angles to not come to a stop
@@ -419,17 +419,6 @@ void gpsConditions() {
 
   if (gps.solution == SOL_FIXED || gps.solution == SOL_FLOAT){
     warnDockWithoutGpsTrg = false;    // Svol0: reset warnmessage trigger
-    /*if (fabs(CurrSpeed) >= MOTOR_MIN_SPEED) {                                        //MrTree
-      if ((millis() > linearMotionStartTime + GPS_NO_SPEED_TIME) && (stateGroundSpeed < (MOTOR_MIN_SPEED * 0.5))) { 
-        // if in linear motion and not enough ground speed => obstacle
-        if (GPS_SPEED_DETECTION && !allowDockLastPointWithoutGPS) { 
-          CONSOLE.println("gps no speed => obstacle!");
-          statMowGPSNoSpeedCounter++;
-          triggerObstacle();
-          return;
-        }
-      }
-    }*/
   } else {
     // no gps solution
     if (REQUIRE_VALID_GPS) {
@@ -532,14 +521,14 @@ void trackLine(bool runControl) {
   
   targetDelta = pointsAngle(stateX, stateY, target.x(), target.y());
   if (maps.trackReverse) targetDelta = scalePI(targetDelta + PI);
-   else targetDelta = scalePIangles(targetDelta, stateDelta);
+  targetDelta = scalePIangles(targetDelta, stateDelta);
   trackerDiffDelta = distancePI(stateDelta, targetDelta);
   lateralError = distanceLineInfinite(stateX, stateY, lastTarget.x(), lastTarget.y(), target.x(), target.y());
   distToPath = distanceLine(stateX, stateY, lastTarget.x(), lastTarget.y(), target.x(), target.y());
   targetDist = maps.distanceToTargetPoint(stateX, stateY);
   lastTargetDist = maps.distanceToLastTargetPoint(stateX, stateY);
   targetReached = (targetDist < TARGET_REACHED_TOLERANCE);
-
+  float lineDist = maps.distanceToTargetPoint(lastTarget.x(), lastTarget.y());
   
   if (!AngleToTargetFits()) { 
     rotateToTarget();

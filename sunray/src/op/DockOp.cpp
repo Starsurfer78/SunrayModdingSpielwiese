@@ -91,11 +91,11 @@ void DockOp::end(){
 }
 
 void DockOp::run(){
-    if (!detectObstacle()){
-        detectObstacleRotation();                              
-    }
-    // line tracking
-    trackLine(true);       
+    if (!robotShouldWait() && !detectObstacle() && !detectObstacleRotation()){
+            //if (ESCAPE_LAWN) detectLawn(); //MrTree                              
+            // line tracking
+            trackLine(true);
+        }      
     detectSensorMalfunction(); 
     battery.resetIdle();
 }

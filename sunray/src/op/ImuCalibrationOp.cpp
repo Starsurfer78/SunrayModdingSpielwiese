@@ -25,6 +25,7 @@ void ImuCalibrationOp::changeOp(Op &anOp, bool returnBackOnExit){
 void ImuCalibrationOp::begin(){
     nextImuCalibrationSecond = 0;
     imuCalibrationSeconds = 0;
+    motor.stopImmediately(true);
 }
 
 
@@ -34,7 +35,7 @@ void ImuCalibrationOp::end(){
 
 void ImuCalibrationOp::run(){
     battery.resetIdle();
-    motor.stopImmediately(true);   
+    //motor.stopImmediately(true);   
     if (millis() > nextImuCalibrationSecond){
         nextImuCalibrationSecond = millis() + 1000;  
         imuCalibrationSeconds++;

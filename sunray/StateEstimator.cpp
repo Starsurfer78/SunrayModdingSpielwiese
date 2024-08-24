@@ -298,7 +298,7 @@ void computeRobotState(){
   
   if (gps.solutionAvail && (gps.solution == SOL_FIXED || gps.solution == SOL_FLOAT)){
     gps.solutionAvail = false;        
-    //stateGroundSpeed = 0.9 * stateGroundSpeed + 0.1 * abs(gps.groundSpeed); //MrTree.. not sure why this is put into lowpassfilter, i am sure ublox already does all to give accurate groundspeed.... maybe just by habit
+    //stateGroundSpeed = lp2 * stateGroundSpeed + (1 - lp2) * gps.groundSpeed; //MrTree.. not sure why this is put into lowpassfilter, i am sure ublox already does all to give accurate groundspeed.... maybe just by habit
     stateGroundSpeed = gps.groundSpeed;         //0.7 * stateGroundSpeed + 0.3 * gps.groundSpeed;    
     
     float distGPS = sqrt( sq(posN-lastPosN)+sq(posE-lastPosE) );

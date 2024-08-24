@@ -60,6 +60,7 @@ class Op {
     virtual void end();        
     // --------- events --------------------------------------
     virtual void onImuCalibration();
+    virtual void onGpsJump();
     virtual void onGpsNoSignal();
     virtual void onGpsFixTimeout();
     virtual void onRainTriggered();
@@ -67,6 +68,7 @@ class Op {
     virtual void onLiftTriggered();
     virtual void onOdometryError();
     virtual void onMotorOverload();
+    virtual void onMotorMowStart();
 	  virtual void onMotorMowStall();		//MrTree
     virtual void onMotorError();
     virtual void onObstacle();
@@ -121,10 +123,12 @@ class MowOp: public Op {
     virtual void begin() override;
     virtual void end() override;
     virtual void run() override;
+    virtual void onGpsJump() override;
     virtual void onGpsNoSignal() override;
     virtual void onGpsFixTimeout() override;
     virtual void onOdometryError() override;
     virtual void onMotorOverload() override;
+    virtual void onMotorMowStart() override;
 	  virtual void onMotorMowStall() override;		//MrTree
     virtual void onMotorError() override;
     virtual void onRainTriggered() override;
@@ -232,6 +236,18 @@ class GpsWaitFloatOp: public Op {
     virtual void run() override;
 };
 
+// just wait
+class WaitOp: public Op {
+  public:
+    unsigned long waitStartTime = 0;  //MrTree
+    unsigned long waitTime = 0;
+    //WaitOp();
+    virtual String name() override;
+    virtual void begin() override;
+    virtual void end() override;
+    virtual void run() override;
+};
+
 // escape high lawn (drive backwards without virtual obstace)
 class EscapeLawnOp: public Op {					//MrTree
   public:        								//**
@@ -305,6 +321,7 @@ extern EscapeLawnOp escapeLawnOp;			//MrTree
 extern EscapeRotationOp escapeRotationOp;
 extern EscapeReverseOp escapeReverseOp;
 extern EscapeForwardOp escapeForwardOp;
+extern WaitOp waitOp;
 extern KidnapWaitOp kidnapWaitOp;
 extern GpsWaitFixOp gpsWaitFixOp;
 extern GpsWaitFloatOp gpsWaitFloatOp;

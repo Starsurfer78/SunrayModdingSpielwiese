@@ -13,6 +13,7 @@
 void Motor::begin() {
   speedUpTrig = false;
   linearCurrSet = 0;
+  waitSpinUp = false;
   motorMowRpmCheck = false;//MrTree
   motorMowStallFlag = false;//MrTree
   motorMowRpmError = false;//MrTree
@@ -166,15 +167,13 @@ void Motor::setMowPwm( int val ){
 }
 
 bool Motor::waitMowMotor() {
-  static bool waitMowMotor;
-
   if (millis() < motor.motorMowSpinUpTime + MOWSPINUPTIME){
       // wait until mowing motor is running or stopping
       if (!buzzer.isPlaying()) buzzer.sound(SND_WARNING, true);
-      if (!waitMowMotor) CONSOLE.println("Motor::waitMowMotor() trying to wait for mowmotor....");
-      waitMowMotor = true;
-    } else waitMowMotor = false;
-  return waitMowMotor;
+      if (!waitSpinUp) CONSOLE.println("Motor::waitMowMotor() trying to wait for mowmotor....");
+      waitSpinUp = true;
+    } else waitSpinUp = false;
+  return waitSpinUp;
 }
 
 void Motor::speedPWM ( int pwmLeft, int pwmRight, int pwmMow )
@@ -277,6 +276,7 @@ void Motor::setMowState(bool switchOn){
       switchedOn = true;
       mowPwm = MOW_PWM_NORMAL; //try circumvent the value load of sd, motor.cpp value at begin seems to get overwritten
       motorMowSpinUpTime = millis();
+      waitMowMotor();
       if (toggleMowDir){
         // toggle mowing motor direction each mow motor start
         motorMowForwardSet = !motorMowForwardSet;
@@ -290,7 +290,8 @@ void Motor::setMowState(bool switchOn){
       CONSOLE.print(" PWM: ");
       CONSOLE.println(motorMowPWMSet);
     } else {
-      motorMowSpinUpTime = millis();
+      //motorMowSpinUpTime = millis();
+      //waitMowMotor();
       motorMowPWMSet = 0;
       motorMowRpmSet = 0;
       switchedOn = false;
@@ -308,6 +309,7 @@ void Motor::setMowState(bool switchOn){
       }
       switchedOn = true; 
       motorMowSpinUpTime = millis();
+      waitMowMotor();
       if (toggleMowDir){
         // toggle mowing motor direction each mow motor start
         motorMowForwardSet = !motorMowForwardSet;
@@ -322,8 +324,9 @@ void Motor::setMowState(bool switchOn){
       CONSOLE.println(motorMowRpmSet);
     } else {
       CONSOLE.println("Motor::setMowState RPM OFF");
+      //motorMowSpinUpTime = millis();
+      //waitMowMotor();
       motorMowRpmSet = 0;
-      motorMowSpinUpTime = millis();
       switchedOn = false;  
     }
   } 
@@ -380,6 +383,8 @@ void Motor::run() {
   checkMotorMowStall();         //MrTree
   drvfix();
   
+  //CONSOLE.print("mowSpinUp: ");
+  //CONSOLE.println(motor.waitSpinUp);
   // if motor driver indicates a fault signal, try a recovery   
   // if motor driver uses too much current, try a recovery     
   // if there is some error (odometry, too low current, rpm fault), try a recovery 
@@ -406,7 +411,7 @@ void Motor::run() {
         //stopImmediately(true);
         motorDriver.resetMotorFaults();
         recoverMotorFault = false;  
-        if (recoverMotorFaultCounter >= 10){ // too many successive motor faults
+        if (recoverMotorFaultCounter >= 6){ // too many successive motor faults
           //stopImmediately(true);
           CONSOLE.println("ERROR: motor recovery failed");
           recoverMotorFaultCounter = 0;
@@ -457,7 +462,7 @@ void Motor::run() {
   motorRightRpmCurrLP = lp1 * motorRightRpmCurrLP + (1.0-lp1) * motorRightRpmCurr;
   motorMowRpmCurrLP = lp1 * motorMowRpmCurrLP + (1.0-lp1) * motorMowRpmCurr; 
  
-  motorMowRpmCurrLPFast = lp4 * motorMowRpmCurrLPFast + (1.0-lp4) * motorMowRpmCurr;
+  motorMowRpmCurrLPFast = lp3 * motorMowRpmCurrLPFast + (1.0-lp3) * motorMowRpmCurr;
 
   if (ticksLeft == 0) {
     motorLeftTicksZero++;
@@ -470,6 +475,7 @@ void Motor::run() {
   } else motorRightTicksZero = 0;
 
   // speed controller
+  
   control();    
   motorLeftRpmLast = motorLeftRpmCurr;
   motorRightRpmLast = motorRightRpmCurr;
@@ -487,17 +493,17 @@ void Motor::run() {
 
 // check if motor current too high
 bool Motor::checkCurrentTooHighError(){
-  bool motorLeftFault = (motorLeftSense > MOTOR_FAULT_CURRENT);
-  bool motorRightFault = (motorRightSense > MOTOR_FAULT_CURRENT);
+  bool motorLeftFault = (motorLeftSenseLP > MOTOR_FAULT_CURRENT);
+  bool motorRightFault = (motorRightSenseLP > MOTOR_FAULT_CURRENT);
   bool motorMowFault = (motorMowSenseLP > MOW_FAULT_CURRENT);
   if (motorLeftFault || motorRightFault || motorMowFault){
     CONSOLE.print("ERROR motor current too high: ");
     CONSOLE.print("  current=");
-    CONSOLE.print(motorLeftSense);
+    CONSOLE.print(motorLeftSenseLP);
     CONSOLE.print(",");
-    CONSOLE.print(motorRightSense);
+    CONSOLE.print(motorRightSenseLP);
     CONSOLE.print(",");
-    CONSOLE.println(motorMowSense);
+    CONSOLE.println(motorMowSenseLP);
     return true;
   } 
   return false; 
@@ -763,19 +769,14 @@ void Motor::changeSpeedSet(){
 
 // check mow motor RPM stalls                                                          
 void Motor::checkMotorMowStall(){ 
-  if (ESCAPE_LAWN && switchedOn) {
+  if (ESCAPE_LAWN && switchedOn && !waitSpinUp && !RC_Mode) {
     static unsigned long lastStalltime = 0;
     unsigned long deltaControlTimeSec = (millis() - lastMowStallCheckTime);
     lastMowStallCheckTime = millis();
 
-    //returns
-    if ((millis() < lastStalltime + BUMPER_DEADTIME) || (bumper.obstacle())) return;
-    if (motorMowSpinUpTime + MOWSPINUPTIME > millis()){  //MrTree mow motor not ready, ignore
-      motorMowStallDuration = 0;
-      motorMowStall = false;
-      motorMowSpunUp = false;     
-      return;
-    }
+    //return
+    if (millis() < lastStalltime + BUMPER_DEADTIME || bumper.obstacle()) return;
+    if (millis() < linearMotionStartTime + 2000) return;
 
     if (ESCAPE_LAWN_MODE == 1){
           motorMowStall = (mowPowerAct > mowPowerMax *MOW_POWERtr_STALL/100);

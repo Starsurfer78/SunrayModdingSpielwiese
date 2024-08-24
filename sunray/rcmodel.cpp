@@ -147,26 +147,6 @@ void RCModel::run()
       if (USE_MOW_RPM_SET) motor.mowRPM_RC = rc_mowRPM;
       else motor.mowPWM_RC = rc_mowPWM;
     }
-/*#ifdef RC_DEBUG
-    if (t >= nextOutputTime) 
-    {
-      nextOutputTime = t + 1000;
-      //CONSOLE.println(PWMLeft);
-      //CONSOLE.println(PWMRight);
-      //CONSOLE.print("RC: linearPPM= ");
-      //CONSOLE.print(linearPPM);
-      //CONSOLE.print("RC: linear_PPM= ");
-      //CONSOLE.print(lin_PPM);   
-      //CONSOLE.print("RC: angularPPM= ");
-      //CONSOLE.print(angularPPM);
-      //CONSOLE.print("RC: angular_PPM= ");
-      //CONSOLE.print(ang_PPM);
-      //CONSOLE.print("RC: mowPPM= ");
-      //CONSOLE.print(mowPPM);
-      //CONSOLE.print("RC: mow_PPM= ");
-      //CONSOLE.print(mow_PPM);
-    }
-#endif*/
    motor.setLinearAngularSpeed(rc_linear, rc_angular, false);                     // R/C Signale an Motor leiten
    if (bMow != motor.switchedOn) motor.setMowState(bMow);                         // bMow vom Poti als Schwellwertschalter
   }

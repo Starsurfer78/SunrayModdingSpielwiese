@@ -90,13 +90,11 @@ void MowOp::end(){
 
 void MowOp::run(){
 	
-
-    if (!detectObstacle()){
-        detectObstacleRotation();                              
+    if (!robotShouldWait() && !detectObstacle() && !detectObstacleRotation()){
+        if (ESCAPE_LAWN) detectLawn(); //MrTree                              
+        // line tracking
+        trackLine(true);
     }
-    // line tracking
-    trackLine(true);
-	if (ESCAPE_LAWN)detectLawn(); //MrTree
     detectSensorMalfunction();    
     battery.resetIdle();
 	
@@ -144,6 +142,23 @@ void MowOp::onBatteryLowShouldDock(){
     changeOp(dockOp);
 }
 
+void MowOp::onGpsJump(){
+    if (maps.wayMode != WAY_DOCK) {
+        CONSOLE.println("MowOp::onGpsJump: trigger WaitOp");
+        waitOp.waitTime = GPS_JUMP_WAIT_TIME;
+        motor.setMowState(false);
+        changeOp(waitOp, true);
+    } else {
+        CONSOLE.println("MowOp::onGpsJump: ignoring gpsJump... docking");
+    }
+}
+
+void MowOp::onMotorMowStart(){
+    CONSOLE.println("MowOp::onMotorMowStart: Mow motor started, trigger WaitOp");
+    waitOp.waitTime = MOWSPINUPTIME;
+    //motor.waitSpinUp = false;
+    changeOp(waitOp, true);
+}
 
 void MowOp::onMotorMowStall(){											//MrTree
 	CONSOLE.println("MowOp::onMotorMowStall: Mow motor RPM stall detected");	//**   
@@ -178,7 +193,7 @@ void MowOp::onObstacle(){
         changeOp(errorOp);                
     }*/
     if (OBSTACLE_AVOIDANCE){
-        if (robotShouldMoveForward() && robotShouldRotate()) changeOp(escapeRotationOp, true); 
+        if (robotShouldRotate()) changeOp(escapeRotationOp, true); 
         if (robotShouldMoveForward()) changeOp(escapeReverseOp, true);
         if (robotShouldMoveBackward()) changeOp(escapeForwardOp, true);      
     } else {     

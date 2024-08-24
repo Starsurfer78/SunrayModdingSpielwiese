@@ -222,8 +222,11 @@ void resetStateEstimation(){
   //stateDeltaLast = 0;
   //stateDeltaSpeed = 0;
   stateDeltaSpeedIMU = 0;
+  stateDeltaSpeed = 0;
   stateDeltaSpeedLP = 0;
   stateDeltaSpeedWheels = 0;
+  diffIMUWheelYawSpeed = 0;
+  diffIMUWheelYawSpeedLP = 0;
 }
 
 // reset linear motion measurement
@@ -233,7 +236,6 @@ void resetLinearMotionMeasurement(){
 
 // reset angular motion measurement
 void resetAngularMotionMeasurement(){
-  diffIMUWheelYawSpeedLP = 0;
   angularMotionStartTime = millis();
 }
 
@@ -701,16 +703,39 @@ void start(){
     tester.begin();
   #endif
 }
+// should robot wait?
+bool robotShouldWait(){
+  //motor.waitMowMotor();
 
-// should robot move?
+  if (motor.waitSpinUp) {
+    //motor.waitSpinUp = false;
+    CONSOLE.println("waitSpinUp triggered");
+    //activeOp->onMotorMowStart();
+    triggerMotorMowWait();
+    return true;
+  }
+  if (GPS_JUMP_WAIT && gpsJump){
+    gpsJump = false;
+    //motor.stopImmediately(true);
+    //activeOp->onGpsJump();
+    triggerGpsJump();
+    return true;
+  }
+
+  return false;
+}
+
+// should robot move forward or backward?
 bool robotShouldMove(){
   return (fabs(motor.linearSpeedSet) >= MOTOR_MIN_SPEED); 
 }
 
+// should robot move forward?
 bool robotShouldMoveForward(){
-   return (motor.linearSpeedSet >= MOTOR_MIN_SPEED / 2.0);  
+   return (motor.linearSpeedSet >= MOTOR_MIN_SPEED / 2.0);
 }
 
+// should robot move backward?
 bool robotShouldMoveBackward(){
    return (motor.linearSpeedSet <= - MOTOR_MIN_SPEED / 2.0);   
 }
@@ -718,13 +743,7 @@ bool robotShouldMoveBackward(){
 // should robot rotate? only applies when robot is nearly still
 bool robotShouldRotate(){
   if (fabs(motor.linearSpeedSet) < MOTOR_MIN_SPEED  && fabs(motor.angularSpeedSet)/PI*180.0 > 5.0) return (true);//MrTree changed to deg/s (returned true before if angularspeedset > 0.57deg/s), reduced linearSpeedSet condition
-  //if (fabs(motor.angularSpeedSet)/PI*180.0 > 5.0) return (true);
-  else {
-    //stateDeltaSpeedLP = 0;      //MrTree reset measurement
-    //diffIMUWheelYawSpeed = 0;   //MrTree reset measurement
-    //diffIMUWheelYawSpeedLP = 0; //MrTree reset measurement
-    return (false); 
-  }
+    else return (false);   
 }
 
 // should robot be in motion? NOTE: function ignores very short motion pauses (with motion low-pass filtering)
@@ -739,29 +758,62 @@ bool robotShouldBeInMotion(){
   return stateInMotionLP;
 }
 
-// drive reverse on high lawn and retry   //MrTree
-void triggerMotorMowStall(){                 //MrTree
-  activeOp->onMotorMowStall();               //MrTree
-}                                         //MrTree
+void triggerMotorMowWait(){
+  resetStateEstimation();
+  resetLinearMotionMeasurement();
+  resetAngularMotionMeasurement();
+  activeOp->onMotorMowStart();
+}
+
+// drive reverse on high lawn and retry
+void triggerMotorMowStall(){
+  resetStateEstimation();
+  resetLinearMotionMeasurement();
+  resetAngularMotionMeasurement();
+  activeOp->onMotorMowStall(); 
+}
+
+// trigger gps jump action
+void triggerGpsJump(){
+  resetStateEstimation();
+  resetLinearMotionMeasurement();
+  resetAngularMotionMeasurement();
+  activeOp->onGpsJump();
+}
 
 // drive reverse if robot cannot move forward
 void triggerObstacle(){
+  resetStateEstimation();
+  resetLinearMotionMeasurement();
+  resetAngularMotionMeasurement();
   activeOp->onObstacle();
 }
 
+// stuck rotate avoidance (drive forward if robot cannot rotate)
+void triggerObstacleRotation(){
+  resetStateEstimation();
+  resetLinearMotionMeasurement();
+  resetAngularMotionMeasurement();
+  activeOp->onObstacleRotation();
+}
+
 void detectLawn(){ //MrTree
+  static unsigned long motorMowStallTime = 0;
   if (ESCAPE_LAWN){ //MrTree option for triggering escapelawn with actual measured rpm stall
     if ((millis() > (escapeLawnTriggerTime + ESCAPELAWN_DEADTIME)) && motor.motorMowStallFlag){
       escapeLawnTriggerTime = millis();                                                                    
-      //RPM stalled, reverse from lawn
-      if (ESCAPE_LAWN_MODE == 1) CONSOLE.println("detectLawn(): High mow motor power!");
-      if (ESCAPE_LAWN_MODE == 2) CONSOLE.println("detectLawn(): RPM of mow motor stalled!");    
-      if (ESCAPELAWNDISTANCE > lastTargetDist) escapeLawnDistance = lastTargetDist;            //MrTree(svol0) Wenn die Entfernung zum letzten Wegpunkt kleiner als die Strecke zur Reversieren ist, wird nur bis zum Wegpunkt reversiert
-        else escapeLawnDistance = ESCAPELAWNDISTANCE;                                          //MrTree  wegpunkt funktioniert leider nicht, da die lasttarget distance immer zum mäher geupdatet wird??     
-      //if (activeOp != &escapeLawnOp){ //Only allow trigger if escapeop finished ?  
-      if (escapeFinished){
-        escapeFinished = false;
-        triggerMotorMowStall();
+      motorMowStallTime += deltaTime;
+      //RPM stalled, reverse from lawn after delay
+      if (motorMowStallTime > ESCAPELAWN_DELAY){
+        if (ESCAPE_LAWN_MODE == 1) CONSOLE.println("detectLawn(): High mow motor power!");
+        if (ESCAPE_LAWN_MODE == 2) CONSOLE.println("detectLawn(): RPM of mow motor stalled!");    
+        if (ESCAPELAWNDISTANCE > lastTargetDist) escapeLawnDistance = lastTargetDist;            //MrTree(svol0) Wenn die Entfernung zum letzten Wegpunkt kleiner als die Strecke zur Reversieren ist, wird nur bis zum Wegpunkt reversiert
+          else escapeLawnDistance = ESCAPELAWNDISTANCE;                                          //MrTree  wegpunkt funktioniert leider nicht, da die lasttarget distance immer zum mäher geupdatet wird??     
+        if (escapeFinished){
+          escapeFinished = false;
+          motorMowStallTime = 0;
+          triggerMotorMowStall();
+        }
       }
     return;
     }
@@ -813,6 +865,7 @@ bool detectLift(){
 // returns true, if obstacle detected, otherwise false
 bool detectObstacle(){
   static unsigned long lastBumperTime = 0;
+  static unsigned long noGPSSpeedTime = 0;
 
   if (!robotShouldMove()) return false;
 
@@ -841,7 +894,7 @@ bool detectObstacle(){
   #ifdef ENABLE_LIFT_DETECTION
     #ifdef LIFT_OBSTACLE_AVOIDANCE
       if ( (millis() > linearMotionStartTime + BUMPER_DEADTIME) && (liftDriver.triggered()) ) {
-        CONSOLE.println("lift sensor obstacle!");    
+        CONSOLE.println("LIFT SENSOR: lift sensor obstacle!");    
         //statMowBumperCounter++;
         statMowLiftCounter++;
         triggerObstacle();    
@@ -854,8 +907,11 @@ bool detectObstacle(){
   if ( millis() > lastBumperTime + BUMPER_DEADTIME && bumper.obstacle() ){ 
   //if (bumper.obstacle()){
     lastBumperTime = millis();
-    CONSOLE.println("bumper obstacle!");    
+    CONSOLE.println("BUMPER: bumper obstacle!");    
     statMowBumperCounter++;
+    resetLinearMotionMeasurement();
+    resetAngularMotionMeasurement();
+    resetStateEstimation();
     triggerObstacle();    
     return true;
   }
@@ -863,7 +919,7 @@ bool detectObstacle(){
   // sonar
   if (sonar.obstacle() && (maps.wayMode != WAY_DOCK)){
     if (SONAR_TRIGGER_OBSTACLES){
-      CONSOLE.println("sonar obstacle!");            
+      CONSOLE.println("SONAR_TRIGGER_OBSTACLES: sonar obstacle!");            
       statMowSonarCounter++;
       triggerObstacle();
       return true;
@@ -871,19 +927,21 @@ bool detectObstacle(){
   }
 
   // check GPS stateGroundSpeed difference to linearSpeedSet
-  if (millis() > linearMotionStartTime + GPS_SPEED_DELAY) {
-    if (stateGroundSpeed < constrain(fabs(motor.linearSpeedSet), MOTOR_MIN_SPEED/2, fabs(motor.linearSpeedSet)/4)) {//fabs(motor.linearSpeedSet)/4.0){ 
-      if (GPS_SPEED_DETECTION && !allowDockLastPointWithoutGPS){
-        //if (robotShouldMoveForward()){
-        CONSOLE.println("gps no groundspeed => assume obstacle!");
+  if (millis() > linearMotionStartTime + GPS_SPEED_DEADTIME) {
+    if (stateGroundSpeed < fabs(motor.linearSpeedSet/3)) {
+      noGPSSpeedTime += deltaTime;
+      if (GPS_SPEED_DETECTION && !allowDockLastPointWithoutGPS && noGPSSpeedTime > GPS_SPEED_DELAY){
+        CONSOLE.println("GPS_SPEED_DETECTION: gps no groundspeed => assume obstacle!");
         statMowGPSMotionTimeoutCounter++;
+        noGPSSpeedTime = 0;
         resetLinearMotionMeasurement();
+        resetAngularMotionMeasurement();
+        resetStateEstimation();
         triggerObstacle();
         return true;
       }
     }     
   }
-
 
   // check if GPS motion (obstacle detection)  
   if ((millis() > nextGPSMotionCheckTime) || (millis() > overallMotionTimeout)) {        
@@ -896,8 +954,11 @@ bool detectObstacle(){
     if (delta < GPS_MOTION_DETECTION_DELTA){ //MrTree 0.05
       if (GPS_MOTION_DETECTION){
         //if (robotShouldMoveForward()){
-          CONSOLE.println("gps no motion => assume obstacle!");
+          CONSOLE.println("GPS_MOTION_DETECTION: gps no motion => assume obstacle!");
           statMowGPSMotionTimeoutCounter++;
+          resetLinearMotionMeasurement();
+          resetAngularMotionMeasurement();
+          resetStateEstimation();
           triggerObstacle();
           return true;
         
@@ -916,20 +977,20 @@ bool detectObstacle(){
 
   if (imuDriver.imuFound && targetDist > NEARWAYPOINTDISTANCE/2 && lastTargetDist > NEARWAYPOINTDISTANCE/2 && millis() > linearMotionStartTime + BUMPER_DEADTIME){ // function only starts when mower is going between points 
     // during mowing a line, getting deflected by obstacle while it should not rotate version 1
-    if (!robotShouldRotate() && fabs(diffIMUWheelYawSpeedLP) > 10.0/180.0 * PI  && fabs(stateDeltaSpeedIMU) < 10/180 * PI ) {  // yaw speed difference between wheels and IMU more than 8 degree/s, e.g. due to obstacle AND imu shows not enough rotation
-      CONSOLE.println("During Linetracking: yaw difference between wheels and IMU => assuming obstacle at mower side");
+    if (!robotShouldRotate() && fabs(diffIMUWheelYawSpeedLP) > 10.0/180.0 * PI) {  // yaw speed difference between wheels and IMU more than 8 degree/s, e.g. due to obstacle AND imu shows not enough rotation
+      CONSOLE.println("During Linetracking: IMU yaw difference between wheels and IMU while !robotShouldRotate => assuming obstacle at mower side");
+      CONSOLE.print("                                                           diffIMUWheelYawSpeedLP = ");CONSOLE.println(fabs(diffIMUWheelYawSpeedLP)*180/PI);
+      CONSOLE.print("                                                                    trigger value = ");CONSOLE.println(10.0);
       statMowDiffIMUWheelYawSpeedCounter++;
-      //diffIMUWheelYawSpeed = 0;   //MrTree reset measurement
-      //diffIMUWheelYawSpeedLP = 0; //MrTree reset measurement
       resetStateEstimation();
-      resetAngularMotionMeasurement();  //MrTree reset starttime
+      resetAngularMotionMeasurement();
       resetLinearMotionMeasurement();            
       triggerObstacle();
       return true;            
     }
-    // during mowing a line, getting deflected by obstacle while it should not rotate version 2
 
-    if (!robotShouldRotate() && fabs(stateDeltaSpeedIMU) > 10.0/180.0 * PI && fabs(stateDeltaSpeedWheels) < fabs(stateDeltaSpeedIMU/3)){ //&& fabs(stateDeltaSpeedIMU) < 20/180 * PI ) {  // yaw speed difference between wheels and IMU more than 8 degree/s, e.g. due to obstacle AND imu shows not enough rotation
+    // during mowing a line, getting deflected by obstacle while it should not rotate version 2
+    if (!robotShouldRotate() && fabs(stateDeltaSpeedIMU) > 10.0/180.0 * PI && fabs(stateDeltaSpeedWheels) < fabs(stateDeltaSpeedIMU/3)){ 
       //if (millis() > linearMotionStartTime + 2500) {  // give time to straighten and accelerate to track the line after a rotation, could use lastTargetDist and targetDist also!
       if (lastTargetDist > NEARWAYPOINTDISTANCE && targetDist > NEARWAYPOINTDISTANCE) {
         CONSOLE.println("During Linetracking: IMU deltaSpeed while !robotShouldRotate => assuming obstacle at mower side");
@@ -938,81 +999,87 @@ bool detectObstacle(){
         CONSOLE.print("                                                            stateDeltaSpeedWheels = ");CONSOLE.println(fabs(stateDeltaSpeedWheels)*180/PI);
         CONSOLE.print("                                                                        trigger/2 = ");CONSOLE.println(fabs(stateDeltaSpeedIMU/3)*180/PI);
         statMowDiffIMUWheelYawSpeedCounter++;
-        //diffIMUWheelYawSpeed = 0;   //MrTree reset measurement
-        //diffIMUWheelYawSpeedLP = 0; //MrTree reset measurement
         resetStateEstimation();
         resetLinearMotionMeasurement();
-        resetAngularMotionMeasurement();  //MrTree reset starttime            
+        resetAngularMotionMeasurement();        
         triggerObstacle();
         return true;
       }            
     }
   }
-
   return false;
 }
 
-// stuck rotate avoidance (drive forward if robot cannot rotate)
-void triggerObstacleRotation(){
-  activeOp->onObstacleRotation();
-}
 
 // stuck rotate detection (e.g. robot cannot due to an obstacle outside of robot rotation point)
 // returns true, if stuck detected, otherwise false
 bool detectObstacleRotation(){
-  if (!OBSTACLE_DETECTION_ROTATION) return false;  
-  if (!robotShouldRotate()) {
-    return false;
-  }  
+  if (!OBSTACLE_DETECTION_ROTATION || !robotShouldRotate()) return false;  
+
   //MrTree: This is the Situation without an IMU!
   if (millis() > angularMotionStartTime + ROTATION_TIMEOUT) { // too long rotation time (timeout), e.g. due to obstacle
     CONSOLE.println("too long rotation time (timeout) for requested rotation => assuming obstacle");
     statMowRotationTimeoutCounter++;
     if (FREEWHEEL_IS_AT_BACKSIDE){
+      resetStateEstimation();
+      resetLinearMotionMeasurement();
+      resetAngularMotionMeasurement(); 
       triggerObstacleRotation(); //MrTree changed to trigger freewheel dependent
       maps.nextPoint(false, stateX, stateY);
     } else {
-      triggerObstacle(); //MrTree changed to trigger freewheel dependent
+      resetStateEstimation();
+      resetLinearMotionMeasurement();
+      resetAngularMotionMeasurement(); 
+      triggerObstacle(); //MrTree changed to trigger freewheel dependent        
     }
-    
     return true;
   }
+
   if (OVERLOAD_ROTATION){       
     if ((motor.motorLeftOverload || motor.motorRightOverload) && millis() > angularMotionStartTime + OVERLOAD_ROTATION_DEADTIME){
       statMowRotationTimeoutCounter++;
       if (FREEWHEEL_IS_AT_BACKSIDE){
-        CONSOLE.println("Overload on traction motors while robot should rotate! Assuming obstacle in the back!");           
+        CONSOLE.println("Overload on traction motors while robot should rotate! Assuming obstacle in the back!");
+        resetStateEstimation();
+        resetLinearMotionMeasurement();
+        resetAngularMotionMeasurement();           
         triggerObstacleRotation();
-        maps.nextPoint(false, stateX, stateY);
+        //maps.nextPoint(false, stateX, stateY); //take next point instead of going back to point mower wanted to reach?
         return true;
       } else {
-        CONSOLE.println("Overload on traction motors while robot should rotate! Assuming obstacle in the front!");    
+        CONSOLE.println("Overload on traction motors while robot should rotate! Assuming obstacle in the front!");
+        resetStateEstimation();
+        resetLinearMotionMeasurement();
+        resetAngularMotionMeasurement();    
         triggerObstacle();
         return true;
       }
     }       
   }
   if (imuDriver.imuFound){
-    if (millis() > angularMotionStartTime + ROTATION_TIME) {                  
-      if (fabs(stateDeltaSpeedLP) < 3.0/180.0 * PI){ // less than 3 degree/s yaw speed, e.g. due to obstacle
-        CONSOLE.print("no IMU rotation speed detected for requested rotation => assuming obstacle: stateDeltaSpeedLP = ");CONSOLE.println(stateDeltaSpeedLP);
+    if (millis() > angularMotionStartTime + ROTATION_TIME) { 
+      // less than 3 degree/s yaw speed, e.g. due to obstacle                 
+      if (fabs(stateDeltaSpeedLP) < 3.0/180.0 * PI){ 
+        CONSOLE.print("no IMU rotation speed detected for requested rotation => assuming obstacle: stateDeltaSpeedLP = ");
+        CONSOLE.println(stateDeltaSpeedLP * 180/PI);
         statMowImuNoRotationSpeedCounter++;
-        stateDeltaSpeedLP = 0;            //MrTree reset measurement
         resetStateEstimation();
-        resetAngularMotionMeasurement();  //MrTree reset starttime   
+        resetLinearMotionMeasurement();
+        resetAngularMotionMeasurement(); 
         triggerObstacleRotation();
-        maps.nextPoint(false, stateX, stateY);
-        return false;      
+        //maps.nextPoint(false, stateX, stateY); //take next point instead of going back to point mower wanted to reach?
+        return true;      
       }
-      if (diffIMUWheelYawSpeedLP > 10.0/180.0 * PI ){ //&& fabs(stateDeltaSpeedIMU) < 20/180 * PI ) {  // yaw speed difference between wheels and IMU more than 8 degree/s, e.g. due to obstacle AND imu shows not enough rotation
-        CONSOLE.println("yaw difference between wheels and IMU for requested rotation => assuming obstacle");
+      // yaw speed difference between wheels and IMU more than 8 degree/s, e.g. due to obstacle AND imu shows not enough rotation
+      if (diffIMUWheelYawSpeedLP > 10.0/180.0 * PI ){
+        CONSOLE.print("yaw difference between wheels and IMU for requested rotation => assuming obstacle: diffIMUWheelYawSpeedLP = ");
+        CONSOLE.println(diffIMUWheelYawSpeedLP * 180/PI);
         statMowDiffIMUWheelYawSpeedCounter++;
-        diffIMUWheelYawSpeed = 0;   //MrTree reset measurement
-        diffIMUWheelYawSpeedLP = 0; //MrTree reset measurement
         resetStateEstimation();
+        resetLinearMotionMeasurement();
         resetAngularMotionMeasurement();  //MrTree reset starttime            
         triggerObstacleRotation();
-        maps.nextPoint(false, stateX, stateY);
+        //maps.nextPoint(false, stateX, stateY); //take next point instead of going back to point mower wanted to reach?
         return true;            
       }
     }    
@@ -1146,22 +1213,19 @@ void run(){
   
   if (millis() >= nextControlTime) {
     nextControlTime = millis() + robot_control_cycle; 
-
     controlLoops++; 
+
+
     //motor.run();
     if (imuIsCalibrating) {
       activeOp->onImuCalibration();             
     } else {
       readIMU();   
     }
-
-    computeRobotState();
-    //motor.run();
-
     if (!robotShouldMove()){
-      resetLinearMotionMeasurement();
-      updateGPSMotionCheckTime();  
-    }
+          resetLinearMotionMeasurement();
+          updateGPSMotionCheckTime();  
+        }
     if (!robotShouldRotate()){
       resetAngularMotionMeasurement();
     }
@@ -1170,6 +1234,11 @@ void run(){
       lastGPSMotionX = 0;
       lastGPSMotionY = 0;
     }
+    motor.run();
+    computeRobotState();
+    
+
+    
 
     /*if (gpsJump) {
       // gps jump: restart current operation from new position (restart path planning)
@@ -1239,7 +1308,7 @@ void run(){
     //CONSOLE.println(activeOp->name());
     activeOp->checkStop();
     activeOp->run();     
-    motor.run();      
+    //motor.run();      
     // process button state
     if (stateButton == 5){
       stateButton = 0; // reset button state

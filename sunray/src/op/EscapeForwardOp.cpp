@@ -15,10 +15,10 @@ String EscapeForwardOp::name(){
 
 void EscapeForwardOp::begin(){
     // rotate stuck avoidance
-    if (escapeForwardCounter == 0)	escapeForwardStartTime = millis();   					// set triggered time on entrance if escapeForwardCounter successfully resets	
-	escapeForwardCounter++;                                                                 //MrTree iterate counter
-    if (((escapeForwardStartTime + 10000) < millis()) && (escapeForwardCounter < 5)) escapeForwardCounter = 0;		//reset counter if escapeForward succeded without too many triggers in given time
-    driveForwardStopTime = millis() + (ESCAPE_FORWARD_WAY/OBSTACLEAVOIDANCESPEED*1000); 	//MrTree just add a constant time to compensate offsets?
+    if (escapeForwardCounter == 0)	escapeForwardStartTime = millis();   					                    // set triggered time on entrance if escapeForwardCounter successfully resets	
+	escapeForwardCounter++;                                                                                     //MrTree iterate counter
+    if (escapeForwardStartTime + 10000 < millis() && escapeForwardCounter < 5) escapeForwardCounter = 0;		//reset counter if escapeForward succeded without too many triggers in given time
+    driveForwardStopTime = millis() + (ESCAPE_FORWARD_WAY/OBSTACLEAVOIDANCESPEED*1000); 	                    //MrTree just add a constant time to compensate offsets?
 }
 
 
@@ -31,7 +31,6 @@ void EscapeForwardOp::run(){
 	if (CHANGE_OBSTACLE_ROTATION){
         if (escapeForwardCounter == 3) {
 	        CONSOLE.println("EscapeForwardOp:: too many retries for escapeForward op, assuming obstacle in front: changeOp-->escapeReverseOp");	      
-            //resetAngularMotionMeasurement();
             changeOp(escapeReverseOp, true);
             return;	
 	    } 
@@ -50,15 +49,21 @@ void EscapeForwardOp::run(){
     }										
     if (millis() > driveForwardStopTime){
         CONSOLE.println("driveForwardStopTime");
-        motor.setLinearAngularSpeed(0,0,true);
+        motor.setLinearAngularSpeed(0,0,false);
         driveForwardStopTime = 0;
         changeOp(*nextOp);    // continue current operation              
     } else {
-        motor.setLinearAngularSpeed(OBSTACLEAVOIDANCESPEED,0,true);	    //MrTree						
+        motor.setLinearAngularSpeed(OBSTACLEAVOIDANCESPEED,0,false);	    //MrTree						
         if ((DISABLE_MOW_MOTOR_AT_OBSTACLE) && (motor.switchedOn)) {	//MrTree
             CONSOLE.println("EscapeForwardOp:: Switch Off mow");		//MrTree
 	        motor.setMowState(false);  																	  	
 	    }  																							 
+    }
+    if (OBSTACLE_CHAINING) {
+        if (!robotShouldWait() && !detectObstacle() && !detectObstacleRotation()){
+            //if (ESCAPE_LAWN) detectLawn(); //MrTree                              
+            //
+        }
     }
 }
 

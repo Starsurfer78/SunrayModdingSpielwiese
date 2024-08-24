@@ -27,9 +27,6 @@ void EscapeRotationOp::end(){
 
 void EscapeRotationOp::run(){
     battery.resetIdle();
-	//if (!detectObstacle()){ 			//Mr.Tree
-    //    detectObstacleRotation();       //Mr.Tree                       
-    //}
 
     motor.setLinearAngularSpeed(OBSTACLEAVOIDANCESPEED,0,false);				
 																				
@@ -39,7 +36,8 @@ void EscapeRotationOp::run(){
 	}  																                                   																					
     if (millis() > driveReverseStopTime){
         CONSOLE.println("driveReverseStopTime");
-        motor.stopImmediately(false); 
+        motor.setLinearAngularSpeed(0,0,false);
+        //motor.stopImmediately(false); 
         driveReverseStopTime = 0;
         if (detectLift()) {
             CONSOLE.println("error: lift sensor!");
@@ -59,6 +57,12 @@ void EscapeRotationOp::run(){
             //    changeOp(dockOp); // dock if no more (valid) mowing points
             //} else changeOp(*nextOp);    // continue current operation
             changeOp(*nextOp, false);    // continue current operation
+        }
+    }
+    if (OBSTACLE_CHAINING) {
+        if (!robotShouldWait() && !detectObstacle() && !detectObstacleRotation()){
+            //if (ESCAPE_LAWN) detectLawn(); //MrTree                              
+            //
         }
     }
 }

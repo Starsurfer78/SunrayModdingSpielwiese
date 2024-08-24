@@ -84,7 +84,6 @@ extern String gpsSolText; // current gps solution as text
 extern int stateButton;  // button state
 extern float stateTemp;  // current temperature
 
-//extern unsigned int robot_control_cycle;
 extern float setSpeed; // linear speed (m/s)
 extern int fixTimeout;
 extern bool finishAndRestart; // auto-restart when mowing finished?
@@ -100,7 +99,6 @@ extern unsigned long lastFixTime;
 
 extern float escapeLawnDistance;       //MrTree
 extern bool escapeFinished;            //MrTree               
-//unsigned long escapeLawnTriggerTime; //MrTree
 extern bool RC_Mode;                   //MrTree
 
 extern WiFiEspClient client;
@@ -187,6 +185,8 @@ int freeMemory();
 void start();
 void run();
 void setOperation(OperationType op, bool allowRepeat = false);
+void triggerMotorMowWait();
+void triggerGpsJump();
 void triggerMotorMowStall(); //MrTree
 void triggerObstacle();
 void sensorTest();
@@ -205,5 +205,6 @@ bool robotShouldRotate(); //MrTree
 bool robotShouldMove();
 bool robotShouldMoveForward();
 bool robotShouldMoveBackward();
+bool robotShouldWait();
 
 #endif

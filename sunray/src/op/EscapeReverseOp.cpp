@@ -27,19 +27,16 @@ void EscapeReverseOp::end(){
 
 void EscapeReverseOp::run(){
     battery.resetIdle();
-	if (!detectObstacle()){ 			//Mr.Tree
-        detectObstacleRotation();       //Mr.Tree                       
-    }
-
     motor.setLinearAngularSpeed(-OBSTACLEAVOIDANCESPEED,0,false);				
 																				
-	if ((DISABLE_MOW_MOTOR_AT_OBSTACLE) && (motor.switchedOn)) {	//MrTree
+	if (DISABLE_MOW_MOTOR_AT_OBSTACLE && motor.switchedOn) {	//MrTree
       CONSOLE.println("EscapeReverseOp:: switch OFF mowmotor");			//MrTree
 	  motor.setMowState(false);  																	  	
 	}  																                                   																					
     if (millis() > driveReverseStopTime){
         CONSOLE.println("driveReverseStopTime");
-        motor.stopImmediately(false); 
+        motor.setLinearAngularSpeed(0,0,false);
+        //motor.stopImmediately(false); 
         driveReverseStopTime = 0;
         if (detectLift()) {
             CONSOLE.println("error: lift sensor!");
@@ -61,6 +58,12 @@ void EscapeReverseOp::run(){
             changeOp(*nextOp, false);    // continue current operation
         }
     }
+    if (OBSTACLE_CHAINING) {
+        if (!robotShouldWait() && !detectObstacle() && !detectObstacleRotation()){
+            //if (ESCAPE_LAWN) detectLawn(); //MrTree                              
+            //
+        }
+    } 
 }
 
 

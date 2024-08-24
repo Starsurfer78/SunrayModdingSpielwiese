@@ -45,7 +45,7 @@ void EscapeLawnOp::run(){
     battery.resetIdle();		 																																																	
 	if (escapeLawnCounter > MAXRETRY) {
 		if ((MAXRETRYOBSTACLE)&&(OBSTACLE_AVOIDANCE)){
-		  CONSOLE.println("EscapeLawnOp:: MAXRETRY�s! too many retries in configured time (ESCAPELAWNTIMER), triggering Obstacleavoidance");	      
+		  CONSOLE.println("EscapeLawnOp:: MAXRETRY´s! too many retries in configured time (ESCAPELAWNTIMER), triggering Obstacleavoidance");	      
           changeOp(escapeReverseOp, true);
 		  escapeLawnCounter = 0;
 		  escapeFinished = true;

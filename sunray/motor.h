@@ -17,6 +17,7 @@ extern unsigned int robot_control_cycle;
 
 class Motor {
   public:
+    bool waitSpinUp;
     bool motorMowStallFlag;//MrTree
     bool speedUpTrig;
     bool switchedOn;    //MrTree
