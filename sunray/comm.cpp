@@ -137,9 +137,11 @@ void cmdControl(){
       float floatValue = cmd.substring(lastCommaIdx+1, ch==',' ? idx : idx+1).toFloat();
       if (counter == 1){                            
           if (intValue >= 0) {
-            motor.enableMowMotor = (intValue == 1);
-            CONSOLE.println("comm.cpp cmdControl() changes mowMotor state");
-            motor.setMowState( (intValue == 1) );           
+            if (!MOW_START_AT_WAYMOW){
+              motor.enableMowMotor = (intValue == 1);
+              CONSOLE.println("comm.cpp cmdControl() changes mowMotor state");
+              motor.setMowState( (intValue == 1) );
+            }           
           }
       } else if (counter == 2){                                      
           if (intValue >= 0) op = intValue; 

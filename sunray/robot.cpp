@@ -928,7 +928,7 @@ bool detectObstacle(){
 
   // check GPS stateGroundSpeed difference to linearSpeedSet
   if (millis() > linearMotionStartTime + GPS_SPEED_DEADTIME) {
-    if (stateGroundSpeed < fabs(motor.linearSpeedSet/3)) {
+    if (stateGroundSpeed < fabs(motor.linearSpeedSet/4)) {
       noGPSSpeedTime += deltaTime;
       if (GPS_SPEED_DETECTION && !allowDockLastPointWithoutGPS && noGPSSpeedTime > GPS_SPEED_DELAY){
         CONSOLE.println("GPS_SPEED_DETECTION: gps no groundspeed => assume obstacle!");
@@ -974,13 +974,13 @@ bool detectObstacle(){
     lastGPSMotionX = stateX;      
     lastGPSMotionY = stateY;      
   }
-
+  // obstacle detection due to deflection of mower during linetracking 
   if (imuDriver.imuFound && targetDist > NEARWAYPOINTDISTANCE/2 && lastTargetDist > NEARWAYPOINTDISTANCE/2 && millis() > linearMotionStartTime + BUMPER_DEADTIME){ // function only starts when mower is going between points 
     // during mowing a line, getting deflected by obstacle while it should not rotate version 1
-    if (!robotShouldRotate() && fabs(diffIMUWheelYawSpeedLP) > 10.0/180.0 * PI) {  // yaw speed difference between wheels and IMU more than 8 degree/s, e.g. due to obstacle AND imu shows not enough rotation
+    if (!robotShouldRotate() && fabs(diffIMUWheelYawSpeedLP) > 12.0/180.0 * PI) {  // yaw speed difference between wheels and IMU more than 8 degree/s, e.g. due to obstacle AND imu shows not enough rotation
       CONSOLE.println("During Linetracking: IMU yaw difference between wheels and IMU while !robotShouldRotate => assuming obstacle at mower side");
       CONSOLE.print("                                                           diffIMUWheelYawSpeedLP = ");CONSOLE.println(fabs(diffIMUWheelYawSpeedLP)*180/PI);
-      CONSOLE.print("                                                                    trigger value = ");CONSOLE.println(10.0);
+      CONSOLE.print("                                                                    trigger value = ");CONSOLE.println(12.0);
       statMowDiffIMUWheelYawSpeedCounter++;
       resetStateEstimation();
       resetAngularMotionMeasurement();
@@ -988,23 +988,20 @@ bool detectObstacle(){
       triggerObstacle();
       return true;            
     }
-
     // during mowing a line, getting deflected by obstacle while it should not rotate version 2
-    if (!robotShouldRotate() && fabs(stateDeltaSpeedIMU) > 10.0/180.0 * PI && fabs(stateDeltaSpeedWheels) < fabs(stateDeltaSpeedIMU/3)){ 
+    if (!robotShouldRotate() && fabs(stateDeltaSpeedIMU) > 12.0/180.0 * PI && fabs(stateDeltaSpeedWheels) < fabs(stateDeltaSpeedIMU/3)){ 
       //if (millis() > linearMotionStartTime + 2500) {  // give time to straighten and accelerate to track the line after a rotation, could use lastTargetDist and targetDist also!
-      if (lastTargetDist > NEARWAYPOINTDISTANCE && targetDist > NEARWAYPOINTDISTANCE) {
-        CONSOLE.println("During Linetracking: IMU deltaSpeed while !robotShouldRotate => assuming obstacle at mower side");
-        CONSOLE.print("                                                                  stateDeltaSpeed = ");CONSOLE.println(fabs(stateDeltaSpeedIMU)*180/PI);
-        CONSOLE.print("                                                                    trigger value = ");CONSOLE.println(10.0);
-        CONSOLE.print("                                                            stateDeltaSpeedWheels = ");CONSOLE.println(fabs(stateDeltaSpeedWheels)*180/PI);
-        CONSOLE.print("                                                                        trigger/2 = ");CONSOLE.println(fabs(stateDeltaSpeedIMU/3)*180/PI);
-        statMowDiffIMUWheelYawSpeedCounter++;
-        resetStateEstimation();
-        resetLinearMotionMeasurement();
-        resetAngularMotionMeasurement();        
-        triggerObstacle();
-        return true;
-      }            
+      CONSOLE.println("During Linetracking: IMU deltaSpeed while !robotShouldRotate => assuming obstacle at mower side");
+      CONSOLE.print("                                                                  stateDeltaSpeed = ");CONSOLE.println(fabs(stateDeltaSpeedIMU)*180/PI);
+      CONSOLE.print("                                                                    trigger value = ");CONSOLE.println(12.0);
+      CONSOLE.print("                                                            stateDeltaSpeedWheels = ");CONSOLE.println(fabs(stateDeltaSpeedWheels)*180/PI);
+      CONSOLE.print("                                                                        trigger/2 = ");CONSOLE.println(fabs(stateDeltaSpeedIMU/3)*180/PI);
+      statMowDiffIMUWheelYawSpeedCounter++;
+      resetStateEstimation();
+      resetLinearMotionMeasurement();
+      resetAngularMotionMeasurement();        
+      triggerObstacle();
+      return true;           
     }
   }
   return false;
@@ -1087,7 +1084,7 @@ bool detectObstacleRotation(){
   return false;
 }
 
-//MrTree: added function to output tuning function parameters
+// function to output parameters
 void tuningOutput(){
   CONSOLE.println();
   CONSOLE.println("TUNING_LOG (disable in config.h): ");

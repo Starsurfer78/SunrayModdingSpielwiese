@@ -950,7 +950,7 @@ void Map::setIsDocked(bool flag){
     useGPSfixForDeltaEstimation = !DOCK_IGNORE_GPS;    
     useGPSfloatForPosEstimation = false;  
     useGPSfloatForDeltaEstimation = false;
-    useIMU = true; // false
+    useIMU = false;
   } else {
     wayMode = WAY_FREE;
     dockPointsIdx = 0;    

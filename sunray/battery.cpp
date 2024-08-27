@@ -218,30 +218,7 @@ void Battery::run(){
       } else {
         batteryVoltageSlopeLowCounter = 0; //max(0, batteryVoltageSlopeLowCounter - 1);
       } 
-    }
-
-		if (millis() >= nextPrintTime){
-			nextPrintTime = millis() + 60000;  // 1 minute  	   	   	
-			
-      //print();			
-			/*DEBUG(F("charger conn="));
-			DEBUG(chargerConnected());
-			DEBUG(F(" chgEnabled="));
-			DEBUG(chargingEnabled);
-			DEBUG(F(" chgTime="));      
-			DEBUG(timeMinutes);
-			DEBUG(F(" charger: "));      
-			DEBUG(chargingVoltage);
-			DEBUG(F(" V  "));    
-			DEBUG(chargingCurrent);   
-			DEBUG(F(" A "));         
-			DEBUG(F(" bat: "));
-			DEBUG(batteryVoltage);
-			DEBUG(F(" V  "));    
-			DEBUG(F("switchOffAllowed="));   
-			DEBUG(switchOffAllowed);      
-			DEBUGLN();      */					
-    }	
+    } 	
   }
   
   if (millis() > nextEnableTime){
@@ -280,5 +257,31 @@ void Battery::run(){
 
   }
 
+  if (DEBUG_BATTERY) {
+      if (millis() >= nextPrintTime){
+        nextPrintTime = millis() + 10000;  // 10 sec  	   	   	
+        //print();			
+        DEBUG(F("charger conn="));
+        DEBUG(chargerConnected());
+        DEBUG(F(" chgEnabled="));
+        DEBUG(chargingEnabled);
+        DEBUG(F(" chgTime="));      
+        DEBUG(timeMinutes);
+        DEBUG(F(" charger: "));      
+        DEBUG(chargingVoltage);
+        DEBUG(F(" V  "));    
+        DEBUG(chargingCurrent);   
+        DEBUG(F(" A "));         
+        DEBUG(F(" bat: "));
+        DEBUG(batteryVoltage);
+        DEBUG(F(" V  "));
+        DEBUG(F(" batslope: "));
+        DEBUG(batteryVoltageSlope);
+        DEBUG(F(" V  "));   
+        //DEBUG(F("switchOffAllowed="));   
+        //DEBUG(switchOffAllowed);      
+        DEBUGLN();
+      }      				
+    }
 
 }

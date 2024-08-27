@@ -91,7 +91,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define ROBOT_IDLE_CYCLE            50    // (ms) cycletime when charging
 //Experimental Modfunctions/Options/Speeds/Time etc. for different stuff and movement operations. Please read the descriptions. Cheers.
 //Mower general times and speeds with their condition parameters, this section is the easiest to be tuned for one´s needs... so feel free and just tune to what you want to see on the lawn 
-#define MOWSPINUPTIME               5000  // (ms) Adds time to rotate mowingdisc before starting moving, use high value if you enable ESCAPE_LAWN for good reading of idle mow motor RPM
+#define MOWSPINUPTIME               6000  // (ms) Adds time to rotate mowingdisc before starting moving, use high value if you enable ESCAPE_LAWN for good reading of idle mow motor RPM
 #define OVERLOADSPEED               0.16  // (m/s) if there is a overloadcurrent of a motordriver, mower will use OVERLOADSPEED
 #define TRACKSLOWSPEED              0.20  // (m/s) e.g the docking speed or functions of the future
 #define NEARWAYPOINTSPEED           0.25  // (m/s) the speed of mower when reaching/leaving a waypoint
@@ -214,6 +214,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define DEBUG_STATE_ESTIMATOR       false
 #define DEBUG_LINETRACKER           false
 #define DEBUG_MOTORCONTROL          false
+#define DEBUG_BATTERY               false
 //Modsection END
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
