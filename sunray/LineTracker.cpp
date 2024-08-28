@@ -528,7 +528,7 @@ void trackLine(bool runControl) {
   targetDist = maps.distanceToTargetPoint(stateX, stateY);
   lastTargetDist = maps.distanceToLastTargetPoint(stateX, stateY);
   targetReached = (targetDist < TARGET_REACHED_TOLERANCE);
-  float lineDist = maps.distanceToTargetPoint(lastTarget.x(), lastTarget.y());
+  //float lineDist = maps.distanceToTargetPoint(lastTarget.x(), lastTarget.y());
   
   if (!AngleToTargetFits()) { 
     rotateToTarget();

@@ -44,6 +44,7 @@ void GpsWaitFixOp::run(){
         }
     }
     if (gps.solution == SOL_FIXED){
+        motor.setMowState(true);
         changeOp(*nextOp);
     }     
 }

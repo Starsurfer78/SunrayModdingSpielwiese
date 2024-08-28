@@ -15,9 +15,10 @@ String GpsRebootRecoveryOp::name(){
 void GpsRebootRecoveryOp::begin(){
     // try GPS reboot after 5 minutes
     if (GPS_REBOOT_RECOVERY){
+        motor.setMowState(false);
         gps.reboot();  // try to recover from false GPS fix
     }
-    retryOperationTime = millis() + 30000; // wait 30 secs after reboot, then try another map routing
+    retryOperationTime = millis() + 60000; // wait 30 secs after reboot, then try another map routing
 }
 
 
@@ -32,6 +33,7 @@ void GpsRebootRecoveryOp::run(){
         CONSOLE.println("restarting operation (retryOperationTime)");
         retryOperationTime = 0;
         //motor.stopImmediately(false);
+        motor.setMowState(true);
         changeOp(*nextOp);    // restart current operation      
     }
 }

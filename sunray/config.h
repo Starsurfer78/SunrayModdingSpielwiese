@@ -154,7 +154,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define ESCAPELAWN_DEADTIME         4000  // (ms) deadtime between allowed ESCAPELAWN triggers (deadtime should be the reverse time of action and be calculated in code :| )
 #define ESCAPELAWN_DELAY            150   // (ms) how long mowmotor needs to be under/over the trigger rpm/power before escape lawn triggers actual reversing of mower
 #define MAXRETRY                    5     // number of possible retries of ESCAPELAWN within ESCAPELAWNTIMER until there will be an obstacle error or obstacle avoidance
-#define MAXRETRYOBSTACLE            false // if true, ESCAPELAWN will trigger Obstacle avoidance when to many MAXRETRY´s and will not trigger an error
+#define MAXRETRYOBSTACLE            true // if true, ESCAPELAWN will trigger Obstacle avoidance when to many MAXRETRY´s and will not trigger an error
 #define RETRYSLOWSPEED              0.15  // (ms) if ESCAPELAWN true, mower will back up with ESCAPELAWNSPEED if RPM stall is detected and retry mowing forward with RETRYSPEED until RETRYSLOWTIME is met, then it will continue with normal Speed
 #define KEEPSLOWSPEED               0.25  // mower will use this speed if there is a rpm stall (%) of mowingblades defined by MOW_RPMtr_SLOW
 #define RETRYSLOWTIME               15000 // (ms) mower will continue slow with RETRY_SLOW_SPEED after ESCAPELAWN operation (reversing triggered by MOW_RPMtr_RETRY (%)) for RETRYSLOWTIME, if a MOW_RPMtr_SLOW will happen again in this retryslowstate, mower resets this timer until no rpm stall occurs in set time
@@ -171,15 +171,15 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 //keep mower from rotating in dock by all means, needs situation dependent tuning, so be aware!
 #define DOCK_NO_ROTATION            true  // if true, rotation for the mower when reaching or leaving the last dockpoint is not allowed! Make sure mower comes just before the dock in a straight line from the point before, then the last point is the dockposition, on that path angular steering is not allowed!
 #define DOCK_NO_ROTATION_DISTANCE   0.60  // (m) distance to from prelast dockpoint to stop angular motion of mower, make sure mower comes straight to dock on a nice straight and long line. Angular will be 0 after the mower surpassed the prelast point to chargerconntacts and traveled for DOCK_NO_ROTATION DISTANCE, make sure the mower has fix and is not dangling around when this function takes over
-#define DOCK_NO_ROTATION_TIMER      15000 // (ms) if mower doesnt hit the charger in given time after passing dockpoint before last dockpoint(charger), an obstacle will be triggered and mower will reverse to gps reboot point and try again.
+#define DOCK_NO_ROTATION_TIMER      16000 // (ms) if mower doesnt hit the charger in given time after passing dockpoint before last dockpoint(charger), an obstacle will be triggered and mower will reverse to gps reboot point and try again.
 #define DOCK_NO_ROTATION_SPEED      0.15  // (m/s) (original it was 0.10, made it changeable...) when angular is not allowed while going to dockposition, this speed is used
 //GPS
 #define GPS_COLD_RESET              true  // perform a cold reset of gps receiver instead a warm reset
 #define SOLUTION_TIMEOUT            5000  // (ms) communication timeout with ublox, original it is set to 1000 ms ... long cycle times of code like pathfinder will lead to an invalid solution
 #define GPS_RESET_WAIT_FIX          true  // reset GPS if mower is in a float timeout?
 #define GPS_RESET_WAIT_FIX_TIME     5    // (min) time in minutes to reset gps if mower is in a float timeout without getting fix within GPS_RESET_WAIT_FIX_TIME 
-#define NO_GPS_SIGNAL_TIMEOUT       4000 
-#define GPS_JUMP_WAIT               false
+#define NO_GPS_SIGNAL_TIMEOUT       10000 
+#define GPS_JUMP_WAIT               true
 #define GPS_JUMP_WAIT_TIME          60000
 
 //other
@@ -188,7 +188,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define WATCHDOG_TIME               16000 // (ms) resettimer for watchdog trigger
 //obstacle behaviour
 #define OBSTACLE_DETECTION_ROTATION true  // detect robot rotation stuck (requires IMU) (wheel at backside, popo situation)
-#define ROTATION_TIMEOUT            4000  // Timeout of rotation movement that triggers an obstacle with escapeReverse
+#define ROTATION_TIMEOUT            5000  // Timeout of rotation movement that triggers an obstacle with escapeReverse
 #define ROTATION_TIME               1500  // Time the code expects to rotate without a IMU yaw difference
 #define CHANGE_OBSTACLE_ROTATION    true  // if true, after 2 times moving forward due to an IMUyaw difference or OVERLOAD_ROTATION with escapeForward because of FREEWHEEL_IS_AT_BACKSIDE, escapeReverse with obstacle is triggered (prevent mower going forward if it can´t rotate and already tried to evade with escapeForward op) 
 #define OVERLOAD_ROTATION           true  // is usefull if there is alot of grip of wheels which leads to a high current and can result in a motor error overcurrent, before that happens... we want an evasion of the situation. If FREEWHEEL_IS_AT_BACKSIDE is true mower will drive forward on MOTOROVERLOAD if mower state is shouldrotate... otherwise it will trigger an Obstacle and escapeReverse (front snout of mower is hitting something during rotation) 

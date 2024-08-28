@@ -799,6 +799,7 @@ void triggerObstacleRotation(){
 
 void detectLawn(){ //MrTree
   static unsigned long motorMowStallTime = 0;
+  if (!motor.switchedOn || motor.waitSpinUp) return;
   if (ESCAPE_LAWN){ //MrTree option for triggering escapelawn with actual measured rpm stall
     if ((millis() > (escapeLawnTriggerTime + ESCAPELAWN_DEADTIME)) && motor.motorMowStallFlag){
       escapeLawnTriggerTime = millis();                                                                    

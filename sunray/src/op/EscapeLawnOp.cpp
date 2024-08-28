@@ -44,18 +44,18 @@ void EscapeLawnOp::end(){
 void EscapeLawnOp::run(){
     battery.resetIdle();		 																																																	
 	if (escapeLawnCounter > MAXRETRY) {
-		if ((MAXRETRYOBSTACLE)&&(OBSTACLE_AVOIDANCE)){
-		  CONSOLE.println("EscapeLawnOp:: MAXRETRY´s! too many retries in configured time (ESCAPELAWNTIMER), triggering Obstacleavoidance");	      
-          changeOp(escapeReverseOp, true);
+		if (MAXRETRYOBSTACLE && OBSTACLE_AVOIDANCE){
+		  CONSOLE.println("EscapeLawnOp:: too many retries in configured time (ESCAPELAWNTIMER), triggering Obstacleavoidance");
 		  escapeLawnCounter = 0;
-		  escapeFinished = true;
+		  escapeFinished = true;	      
+          changeOp(escapeReverseOp, false);
 		  return;
 		} else {
 		  CONSOLE.println("EscapeLawnOp:: Error: too many retries in configured time (ESCAPELAWNTIMER)");
 		  stateSensor = SENS_OBSTACLE;            
-          changeOp(errorOp);
-		  escapeLawnCounter = 0;
-		  escapeFinished = true; //significant change?
+          escapeLawnCounter = 0;
+		  escapeFinished = true;
+		  changeOp(errorOp);
 		  return;
 		}
 	} else {

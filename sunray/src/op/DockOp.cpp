@@ -137,10 +137,10 @@ void DockOp::onKidnapped(bool state){
 
 
 void DockOp::onObstacleRotation(){
-    CONSOLE.println("error: rotation error due to obstacle!");    
+    CONSOLE.println("DockOp::onObstacleRotation() --> changeOp(escapeForwardOp)");    
     statMowObstacles++;   
-    stateSensor = SENS_OBSTACLE;
-    changeOp(errorOp);    
+    //stateSensor = SENS_OBSTACLE;
+    changeOp(escapeForwardOp, true);    
 }
 
 void DockOp::onObstacle(){

@@ -15,7 +15,7 @@ String KidnapWaitOp::name(){
 
 void KidnapWaitOp::begin(){    
   stateSensor = SENS_KIDNAPPED;
-  recoverGpsTime = millis() + 30000;
+  recoverGpsTime = millis() + 60000;
   recoverGpsCounter = 0;
 }
 
@@ -43,7 +43,7 @@ void KidnapWaitOp::run(){
 
   if (millis() > recoverGpsTime){
     CONSOLE.println("KIDNAP_DETECT");
-    recoverGpsTime = millis() + 30000;
+    recoverGpsTime = millis() + 60000;
     recoverGpsCounter++;
     if (recoverGpsCounter == 3){          
       CONSOLE.println("error: kidnapped!");

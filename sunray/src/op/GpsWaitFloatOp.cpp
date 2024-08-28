@@ -34,7 +34,8 @@ void GpsWaitFloatOp::end(){
 void GpsWaitFloatOp::run(){
 
     battery.resetIdle();
-    if ((gps.solution == SOL_FIXED) || (gps.solution == SOL_FLOAT)){        
+    if ((gps.solution == SOL_FIXED) || (gps.solution == SOL_FLOAT)){
+        motor.setMowState(true);        
         changeOp(*nextOp);
     }     
 }
