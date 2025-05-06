@@ -1029,13 +1029,15 @@ bool Map::startDocking(float stateX, float stateY){
     CONSOLE.println("ERROR startDocking: memory errors");
     return false; 
   }  
+
   shouldDock = true;
   //shouldRetryDock = false;
   shouldMow = false;
-  
+  //if (DOCK_GPS_REBOOT) shouldGpsReboot = true; not working
+
   if (dockPoints.numPoints > 0){
     if (wayMode == WAY_DOCK) {
-      CONSOLE.println("skipping path planning to first docking point: already docking");
+      CONSOLE.println("skipping path planning to first docking point: already docking"); 
       //shouldRetryDock = false;    
       return true;  
     }    
@@ -1070,10 +1072,13 @@ bool Map::startMowing(float stateX, float stateY){
   if ((memoryCorruptions != 0) || (memoryAllocErrors != 0)){
     CONSOLE.println("ERROR startMowing: memory errors");
     return false; 
-  }  
+  }
+
   shouldDock = false;
   shouldRetryDock = false;
-  shouldMow = true;    
+  shouldMow = true;
+  //if (DOCK_GPS_REBOOT) shouldGpsReboot = true; 
+
   if (mowPoints.numPoints > 0){
     // find valid path from robot (or first docking point) to mowing point    
     //freePoints.alloc(0);
@@ -1082,6 +1087,7 @@ bool Map::startMowing(float stateX, float stateY){
     src.setXY(stateX, stateY);
     if ((wayMode == WAY_DOCK) && (dockPoints.numPoints > 0)) {
       src.assign(dockPoints.points[0]);
+      
     } else {
       wayMode = WAY_FREE;      
       freePointsIdx = 0;    
@@ -1431,10 +1437,15 @@ bool Map::nextDockPoint(bool sim){
       } else {
         trackSlow = false;
       }
-      if (!sim) useGPSfixForPosEstimation = true;
-      if (!sim) useGPSfixForDeltaEstimation = true;      
-      if (!sim) useGPSfloatForPosEstimation = false;    
-      if (!sim) useGPSfloatForDeltaEstimation = false;    
+      if (!sim && dockPointsIdx == dockPoints.numPoints){ //MrTree dont use GPS for last point approach
+        useGPSfixForPosEstimation = false;
+        useGPSfixForDeltaEstimation = false; 
+      } else {
+        if (!sim) useGPSfixForPosEstimation = true;
+        if (!sim) useGPSfixForDeltaEstimation = true;      
+        if (!sim) useGPSfloatForPosEstimation = false;    
+        if (!sim) useGPSfloatForDeltaEstimation = false;
+      }
       if (!sim) useIMU = true;     // false      
       return true;
     } else {
@@ -1443,12 +1454,16 @@ bool Map::nextDockPoint(bool sim){
     } 
   } else if (shouldMow){
     // should undock
-    if (dockPointsIdx != DOCK_POINT_GPS_REBOOT) shouldGpsReboot = true;
-    if (dockPointsIdx > 0){ 
-      if (!sim) lastTargetPoint.assign(targetPoint);
-      if (!sim) dockPointsIdx--;              
+    if ((dockPointsIdx < DOCK_POINT_GPS_REBOOT-1) || (dockPointsIdx > DOCK_POINT_GPS_REBOOT+1)) shouldGpsReboot = true;
+    if (dockPointsIdx > 0){               
       if (!sim) {
+        lastTargetPoint.assign(targetPoint);
+        dockPointsIdx--;
         trackReverse = (DOCK_FRONT_SIDE) && (dockPointsIdx >= DOCK_REVERSE_POINT) ; // undock reverse only in dock
+        if (dockPointsIdx == dockPoints.numPoints-1){ //MrTree dont use GPS for point before dock approach
+          useGPSfixForPosEstimation = false;
+          useGPSfixForDeltaEstimation = false;
+        } 
       }              
       if ((!sim) && (dockPointsIdx >= (dockPoints.numPoints - DOCK_SLOW_ONLY_LAST_POINTS))) trackSlow = true;     
       return true;

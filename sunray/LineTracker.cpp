@@ -45,6 +45,7 @@ bool langleToTargetFits = false;
 bool targetReached = false;
 bool stateKidnapped = false;
 bool dockTimer = false;                         //MrTree
+bool unDockTimer = false;
 bool oneTrigger = false;                        //MrTree
 bool printmotoroverload = false;
 float trackerDiffDelta = 0;
@@ -77,8 +78,8 @@ bool AngleToTargetFits() {
     angleToTargetFits = (fabs(trackerDiffDelta)/PI*180.0 < 45);       
   }
 
-  if ((!angleToTargetFits || !angleToTargetPrecise) && !dockTimer) angleToTargetFits = false;   //MrTree added !dockTimer to prevent the jumping gps point to cause linear=0 because of !angleToTargetFits, added !angleToTargetPrecise 
-
+  if ((!angleToTargetFits || !angleToTargetPrecise)) angleToTargetFits = false;   //MrTree added !dockTimer to prevent the jumping gps point to cause linear=0 because of !angleToTargetFits, added !angleToTargetPrecise 
+  if (dockTimer || unDockTimer) angleToTargetFits = true;
   return angleToTargetFits;  
 }
 
@@ -215,7 +216,7 @@ void linearSpeedState(){
   linearBool[4] = (motor.keepslow);                                                                 // [4] KEEPSLOWSPEED
   linearBool[5] = (motor.retryslow);                                                                // [5] RETRYSLOWSPEED
   linearBool[6] = (maps.trackSlow && trackslow_allowed);                                            // [6] TRACKSLOWSPEED
-  linearBool[7] = (dockTimer);                                                                      // [7] DOCK_NO_ROTATION_SPEED
+  linearBool[7] = (dockTimer || unDockTimer);                                                       // [7] DOCK_NO_ROTATION_SPEED
   linearBool[8] = (maps.isAtDockPath());                                                            // [8] DOCKPATHSPEED
   linearBool[9] = (maps.isGoingToDockPath());                                                       // [8] DOCKSPEED
   //disable near way point speed if we use the distance ramp
@@ -337,12 +338,13 @@ void noDockRotation() {
       //resetLinearMotionMeasurement();                                         //need to test if this is still neccessary
       if (lastTargetDist > DOCK_NO_ROTATION_DISTANCE){                          //testing easier approach for DOCK_NO_ROTATION setup
         angular = 0;
+        linear = DOCK_NO_ROTATION_SPEED;
         if (!buzzer.isPlaying()) buzzer.sound(SND_ERROR, true);                  
       }
       if (millis() > reachedPointBeforeDockTime+DOCK_NO_ROTATION_TIMER){      //check the time until mower has to reach the charger and triger obstacle if not reached
         CONSOLE.println("noDockRotation(): not docked in given time, triggering maps.retryDocking!");
-        triggerObstacle();
-        dockTimer = false;     
+        dockTimer = false;
+        triggerObstacle();     
       } 
     }
   } else {
@@ -352,26 +354,27 @@ void noDockRotation() {
 
 void noUnDockRotation(){
   if (maps.isBetweenLastAndNextToLastDockPoint() && maps.trackReverse){
-    if (!dockTimer){                                                  //set helper bool to start a timer and print info once
+    if (!unDockTimer){                                                  //set helper bool to start a timer and print info once
       reachedPointBeforeDockTime = millis();                          //start a timer when going to last dockpoint
-      dockTimer = true;                                               //enables following code
+      unDockTimer = true;                                               //enables following code
       CONSOLE.println("noUnDockRotation(): timer to successfully undock startet. angular = 0, turning not allowed");
     }
-    if (dockTimer){
+    if (unDockTimer){
       //resetLinearMotionMeasurement();                                         //need to test if this is still neccessary
                                //testing easier approach for DOCK_NO_ROTATION setup
       angular = 0;
-      linear = -0.20;
+      linear = -DOCK_NO_ROTATION_SPEED;
       if (!buzzer.isPlaying()) buzzer.sound(SND_ERROR, true);                  
       if (millis() > reachedPointBeforeDockTime+DOCK_NO_ROTATION_TIMER){      //check the time until mower has to reach the charger and triger obstacle if not reached
         CONSOLE.println("noUnDockRotation(): reversed for given Time, triggering Wait before further retreating to reboot gps point!");
-        dockTimer = false;
-        targetReached = true;
+        unDockTimer = false;
+        maps.dockPointsIdx--;
+        //targetReached = true;
         activeOp->onGpsJump();    
       } 
     }
   } else {
-      dockTimer = false;     
+      unDockTimer = false;     
   }
     
 }
