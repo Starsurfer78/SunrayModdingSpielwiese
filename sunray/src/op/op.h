@@ -63,6 +63,7 @@ class Op {
     virtual void onGpsJump();
     virtual void onGpsNoSignal();
     virtual void onGpsFixTimeout();
+    virtual void onDockGpsReboot();  
     virtual void onRainTriggered();
     virtual void onTempOutOfRangeTriggered();
     virtual void onLiftTriggered();
@@ -126,6 +127,7 @@ class MowOp: public Op {
     virtual void onGpsJump() override;
     virtual void onGpsNoSignal() override;
     virtual void onGpsFixTimeout() override;
+    virtual void onDockGpsReboot() override;  
     virtual void onOdometryError() override;
     virtual void onMotorOverload() override;
     virtual void onMotorMowStart() override;
@@ -161,7 +163,8 @@ class DockOp: public Op {
     virtual void onObstacleRotation() override;
     virtual void onTargetReached() override;    
     virtual void onGpsFixTimeout() override;
-    virtual void onNoFurtherWaypoints() override;              
+    virtual void onNoFurtherWaypoints() override;
+    virtual void onDockGpsReboot() override;              
     virtual void onGpsNoSignal() override;
     virtual void onKidnapped(bool state) override;
     virtual void onChargerConnected() override;   
@@ -190,7 +193,7 @@ class ChargeOp: public Op {
     virtual void onBatteryUndervoltage() override;    
     virtual void onRainTriggered() override;   
     virtual void onChargerConnected() override;
-	virtual void onTimetableStartMowing() override;    
+	  virtual void onTimetableStartMowing() override;    
     virtual void onTimetableStopMowing() override;   
 };
 
@@ -205,6 +208,16 @@ class KidnapWaitOp: public Op {
     virtual void run() override;
     virtual void onKidnapped(bool state) override;
     virtual void onGpsNoSignal() override;    
+};
+
+// dock reboot gps
+class DockGpsRebootOp: public Op {
+  public:
+    unsigned long rebootGpsTime;
+    virtual String name() override;
+    virtual void begin() override;
+    virtual void end() override;
+    virtual void run() override;
 };
 
 // reboot gps recovery
@@ -326,6 +339,7 @@ extern KidnapWaitOp kidnapWaitOp;
 extern GpsWaitFixOp gpsWaitFixOp;
 extern GpsWaitFloatOp gpsWaitFloatOp;
 extern GpsRebootRecoveryOp gpsRebootRecoveryOp;
+extern DockGpsRebootOp dockGpsRebootOp;
 extern ImuCalibrationOp imuCalibrationOp;
 
 // active op

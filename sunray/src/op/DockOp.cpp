@@ -37,7 +37,6 @@ void DockOp::begin(){
   CONSOLE.println("DockOp::begin switch OFF all motors --> Docking");
   motor.setLinearAngularSpeed(0,0);
   motor.setMowState(false);                
-
   if (((initiatedByOperator) && (previousOp == &idleOp)) || (lastMapRoutingFailed))  maps.clearObstacles();
   
   CONSOLE.print("OP_DOCK");
@@ -100,6 +99,12 @@ void DockOp::run(){
     battery.resetIdle();
 }
 
+void DockOp::onDockGpsReboot(){
+  CONSOLE.println("DockOp::onDockGpsReboot");
+  //maps.shouldGpsReboot = false;
+  motor.setLinearAngularSpeed(0,0, false);
+  changeOp(dockGpsRebootOp, true);
+}
 
 void DockOp::onTargetReached(){
     CONSOLE.println("DockOp::onTargetReached");
@@ -109,7 +114,6 @@ void DockOp::onTargetReached(){
       stateSensor = SENS_NONE; // clear last triggered sensor
     }
 }
-
 
 void DockOp::onGpsFixTimeout(){
     if (REQUIRE_VALID_GPS){    
@@ -134,7 +138,6 @@ void DockOp::onKidnapped(bool state){
         changeOp(kidnapWaitOp, true); 
     }
 }
-
 
 void DockOp::onObstacleRotation(){
     CONSOLE.println("DockOp::onObstacleRotation() --> changeOp(escapeForwardOp)");    
@@ -169,7 +172,6 @@ void DockOp::onChargerConnected(){
   battery.setIsDocked(true);                
   changeOp(chargeOp);
 }
-
 
 void DockOp::onNoFurtherWaypoints(){
   CONSOLE.println("docking finished!");

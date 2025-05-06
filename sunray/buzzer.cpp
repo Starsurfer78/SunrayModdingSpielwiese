@@ -81,7 +81,35 @@ void Buzzer::run(){
         case 3: noTone();  nextToneTime = m + 200; break;
         case 4:            nextToneTime = 0;       break;
       }
-      break;      
+      break;
+    case SND_WAIT:
+      switch (toneIdx){
+        case 0: tone(4200); nextToneTime = m + 200; break;
+        case 1: noTone();  nextToneTime = m + 800; break;
+        case 2: tone(4200); nextToneTime = m + 200; break;
+        case 3: noTone();  nextToneTime = m + 800; break;
+        case 4:            nextToneTime = 0;       break;
+      }
+      break;
+    case SND_GPSJUMP:
+      switch (toneIdx){
+        case 0: tone(4200); nextToneTime = m + 100; break;
+        case 1: noTone();  nextToneTime = m + 100; break;
+        case 2: tone(4200); nextToneTime = m + 100; break;
+        case 3: noTone();  nextToneTime = m + 100; break;
+        case 4:            nextToneTime = 0;       break;
+      }
+      break;
+    case SND_MOWSTART:
+      switch (toneIdx){
+        case 0: tone(3800); nextToneTime = m + 500; break;
+        case 1: tone(4200);  nextToneTime = m + 500; break;
+        case 2: tone(4600); nextToneTime = m + 500; break;
+        case 3: tone(5000);  nextToneTime = m + 500; break;
+        case 4: noTone();  nextToneTime = m + 100; break;
+        case 5:            nextToneTime = 0;       break;
+      }
+      break;        
   }
   toneIdx++;
 }

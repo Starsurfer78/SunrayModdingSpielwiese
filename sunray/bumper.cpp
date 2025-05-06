@@ -102,6 +102,20 @@ bool Bumper::obstacle(){
   else return false;
 }
 
+bool Bumper::obstacleLeft(){
+  if (BUMPER_ENABLE){
+    return (outputLeftPressed);
+  }
+  else return false;
+}
+
+bool Bumper::obstacleRight(){
+  if (BUMPER_ENABLE){
+    return (outputRightPressed);
+  }
+  else return false;
+}
+
 // send separated signals without delay to sensortest
 bool Bumper::testLeft(){
   return (inputLeftPressed);

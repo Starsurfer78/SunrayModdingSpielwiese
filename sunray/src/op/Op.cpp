@@ -22,6 +22,7 @@ EscapeRotationOp escapeRotationOp;
 EscapeReverseOp escapeReverseOp;
 EscapeForwardOp escapeForwardOp;
 KidnapWaitOp kidnapWaitOp;
+DockGpsRebootOp dockGpsRebootOp;
 GpsWaitFixOp gpsWaitFixOp;
 GpsWaitFloatOp gpsWaitFloatOp;
 GpsRebootRecoveryOp gpsRebootRecoveryOp;
@@ -197,6 +198,9 @@ void Op::onGpsNoSignal(){
 }
 
 void Op::onGpsFixTimeout(){
+}
+
+void Op::onDockGpsReboot(){ 
 }
 
 void Op::onRainTriggered(){

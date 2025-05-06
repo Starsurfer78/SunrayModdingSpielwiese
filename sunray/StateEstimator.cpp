@@ -52,6 +52,10 @@ unsigned long nextImuCalibrationSecond = 0;
 unsigned long nextDumpTime = 0;
 unsigned long timeLastState = 0;
 
+unsigned long solutionTime = 0;
+unsigned long lastSolutionTime = 0;
+unsigned long solutionTimeDelta = 0;
+
 const unsigned short bufLen = ROBOT_CONTROL_CYCLE/2;  //seems to be excactly the control cycle time for sync
 float ringBuffer[bufLen] = {0};
 unsigned short bufInd = 0;
@@ -292,18 +296,24 @@ void computeRobotState(){
     posE = gps.relPosE;     
   }   
   
-  if (fabs(motor.linearSpeedSet) < 0.001){       
+  if (fabs(motor.linearSpeedSet) < MOTOR_MIN_SPEED/2){       //0.001
     resetLastPos = true;
   }
   
   if (gps.solutionAvail && (gps.solution == SOL_FIXED || gps.solution == SOL_FLOAT)){
-    gps.solutionAvail = false;        
+    gps.solutionAvail = false;
+    lastSolutionTime = solutionTime;
+    solutionTime = millis();
+    solutionTimeDelta = solutionTime - lastSolutionTime;
+    //CONSOLE.print("SolutionTimeDelta: ");
+    //CONSOLE.println(solutionTimeDelta);        
+    
     //stateGroundSpeed = lp2 * stateGroundSpeed + (1 - lp2) * gps.groundSpeed; //MrTree.. not sure why this is put into lowpassfilter, i am sure ublox already does all to give accurate groundspeed.... maybe just by habit
     stateGroundSpeed = gps.groundSpeed;         //0.7 * stateGroundSpeed + 0.3 * gps.groundSpeed;    
     
     float distGPS = sqrt( sq(posN-lastPosN)+sq(posE-lastPosE) );
     if ((distGPS > 0.3) || (resetLastPos)){
-      if (distGPS > 0.3) {
+      if ((distGPS > 0.3) && (solutionTimeDelta < 350)) {  //consider the last available soulution time, pathfinder will raise solutionTimeDelta up to 1000ms
         gpsJump = true;
         statGPSJumps++;
         CONSOLE.print("GPS jump: ");

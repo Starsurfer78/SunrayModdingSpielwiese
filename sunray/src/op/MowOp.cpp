@@ -90,10 +90,10 @@ void MowOp::end(){
 
 void MowOp::run(){
 	
-    if (!robotShouldWait() && !detectObstacle() && !detectObstacleRotation()){
-        if (ESCAPE_LAWN) detectLawn(); //MrTree                              
+    if (!robotShouldWait() && !detectObstacle() && !detectObstacleRotation()){                             
         // line tracking
         trackLine(true);
+        if (ESCAPE_LAWN) detectLawn(); //MrTree 
     }
     detectSensorMalfunction();    
     battery.resetIdle();
@@ -147,6 +147,7 @@ void MowOp::onGpsJump(){
         CONSOLE.println("MowOp::onGpsJump: trigger WaitOp");
         waitOp.waitTime = GPS_JUMP_WAIT_TIME;
         motor.setMowState(false);
+        if (!buzzer.isPlaying()) buzzer.sound(SND_GPSJUMP, true);
         changeOp(waitOp, true);
     } else {
         CONSOLE.println("MowOp::onGpsJump: ignoring gpsJump... docking");
@@ -156,7 +157,7 @@ void MowOp::onGpsJump(){
 void MowOp::onMotorMowStart(){
     CONSOLE.println("MowOp::onMotorMowStart: Mow motor started, trigger WaitOp");
     waitOp.waitTime = MOWSPINUPTIME;
-    //motor.waitSpinUp = false;
+    if (!buzzer.isPlaying()) buzzer.sound(SND_MOWSTART, true);
     changeOp(waitOp, true);
 }
 
@@ -277,6 +278,14 @@ void MowOp::onTargetReached(){
     }
 }
 
+void MowOp::onDockGpsReboot(){
+    if (DOCK_GPS_REBOOT){
+      CONSOLE.println("MowOp::onDockGpsReboot triggering dockGpsRebootOp");
+	  //stateSensor = SENS_GPS_INVALID;
+      //gpsNoSignalTime = 0;
+      changeOp(dockGpsRebootOp, true);
+    }
+}
 
 void MowOp::onGpsFixTimeout(){
     // no gps solution

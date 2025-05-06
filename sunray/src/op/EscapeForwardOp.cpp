@@ -7,6 +7,7 @@
 #include <Arduino.h>
 #include "../../robot.h"
 #include "../../map.h"
+#include "../../StateEstimator.h"
 #include "../../config.h" //MrTree
 
 String EscapeForwardOp::name(){
@@ -51,6 +52,8 @@ void EscapeForwardOp::run(){
         CONSOLE.println("driveForwardStopTime");
         motor.setLinearAngularSpeed(0,0,false);
         driveForwardStopTime = 0;
+        CONSOLE.println("adding modified obstacle");
+        maps.addObstaclePosition();  
         changeOp(*nextOp);    // continue current operation              
     } else {
         motor.setLinearAngularSpeed(OBSTACLEAVOIDANCESPEED,0,false);	    //MrTree						

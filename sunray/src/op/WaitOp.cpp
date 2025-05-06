@@ -15,7 +15,7 @@ String WaitOp::name(){
 void WaitOp::begin(){
     waitStartTime = millis();
     CONSOLE.println("WaitOp::begin - INFO: waiting!");
-    buzzer.sound(SND_READY, true);          
+    buzzer.sound(SND_WAIT, true);          
     motor.setLinearAngularSpeed(0,0, false); 
 }
 

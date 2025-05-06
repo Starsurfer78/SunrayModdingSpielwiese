@@ -9,7 +9,6 @@
 
 #include <Arduino.h>
 #include <SD.h>
-#include "LineTracker.h"  // Svol0: included for gps-reboot at specified docking point by undocking action
 
 
 // waypoint type
@@ -20,8 +19,13 @@ typedef enum WayType WayType;
 class Point
 {
   public:
-    short px; // cm
-    short py; // cm       
+    #ifdef __linux__
+      float px; // cm    // Linux: float
+      float py; // cm  
+    #else
+      short px; // cm   // Arduino: 2 bytes (max +- 327 meter)
+      short py; // cm 
+    #endif
     Point();
     Point(float ax, float ay); // meter
     float x();  // meter
@@ -48,7 +52,7 @@ class Polygon
     void dealloc();
     void dump();
     long crc();
-	  void getCenter(Point &pt);
+    void getCenter(Point &pt);
     bool read(File &file);
     bool write(File &file);
 };
@@ -128,9 +132,6 @@ class Map
     //int targetPointIdx; // index of target point    
     bool trackReverse; // get to target in reverse?
     bool trackSlow;    // get to target slowly?
-    //bool trackPerimeter;  //MrTree would be a good idea......
-    //bool trackExclusion; //MrTree
-    //bool trackDock;  //MrTree
     bool useGPSfloatForPosEstimation;    // use GPS float solution for position estimation?
     bool useGPSfloatForDeltaEstimation;  // use GPS float solution for delta estimation?
     bool useGPSfixForPosEstimation;  // use GPS fix solution for position estimation?
@@ -143,6 +144,12 @@ class Map
     int freePointsIdx;   // next free point in free point polygon
     int percentCompleted;
     
+	float obs_x = 0;
+    float obs_y = 0;
+    float obs_angle = 0;
+    float obs_distance = 0;
+    float obs_diameter = 0;
+	
     Polygon points;      // all points in one list (mowPoints, perimeterPoints, dockPoints) transfered to robot
     Polygon perimeterPoints;  // all perimeter points
     Polygon mowPoints;        // all mowing points
@@ -157,8 +164,9 @@ class Map
            
     bool shouldDock;  // start docking?
     bool shouldRetryDock; // retry docking?
-    bool shouldMow;  // start mowing?
-    
+    bool shouldMow;  // start mowing?       
+    bool shouldGpsReboot; //perform a reboot?
+
     long mapCRC;  // map data CRC
         
     void begin();    
@@ -203,7 +211,7 @@ class Map
     // next point is straight and not a sharp curve?   
     bool nextPointIsStraight();
     // get docking position and orientation
-    bool getDockingPos(float &x, float &y, float &delta);
+    bool getDockingPos(float &x, float &y, float &delta, int idx = -1);
     
     // ------docking------------------------------------------
     // if docked manually, call this to inform mapping that robot has been docked
@@ -212,13 +220,29 @@ class Map
     bool isUndocking();
     // is robot on docking points and docking?
     bool isDocking();
+	  // is robot at dock path?
+	  bool isAtDockPath();
+    // is robot close to charger?
+    bool isNearDock();
+	  // is robot underway to dockpath?
+	  bool isGoingToDockPath();
+    // is at gps reboot position?
+    bool isAtGpsRebootPoint();
+    bool isBetweenLastAndNextToLastDockPoint();
+    bool isTargetingDock();
+    bool isTargetingLastDockPoint();
+    bool isTargetingNextToLastDockPoint();    
     // call this to inform mapping to start docking
     bool startDocking(float stateX, float stateY);
     // retry docking (have robot drive back to first docking point)
     bool retryDocking(float stateX, float stateY);
     
     // -----virtual obstacles----------------------------------
-    bool addObstacle(float stateX, float stateY);    
+    bool addObstacle(float stateX, float stateY);
+	// set the position of an obstacle
+    bool setObstaclePosition(float stateX, float stateY, float angle, float distance, float diameter);
+    // add the obstacle from obstacle position
+    bool addObstaclePosition(); 
     void clearObstacles();
     
     // -----misc-----------------------------------------------

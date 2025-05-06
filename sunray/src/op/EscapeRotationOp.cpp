@@ -50,8 +50,8 @@ void EscapeRotationOp::run(){
             // continue without obstacles
             changeOp(*nextOp, false);    // continue current operation
         } else {
-            CONSOLE.println("continue operation without virtual obstacle");
-            //maps.addObstacle(stateX, stateY);              
+            CONSOLE.println("continue operation with modified obstacle");
+            maps.addObstaclePosition();              
             //Point pt;
             //if (!maps.findObstacleSafeMowPoint(pt)){
             //    changeOp(dockOp); // dock if no more (valid) mowing points
