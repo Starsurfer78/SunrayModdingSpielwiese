@@ -168,6 +168,11 @@ void DockOp::onObstacle(){
     }
 }
 
+void DockOp::onWaitCommand(){
+  CONSOLE.println("DockOp::onWaitCommand trigger waitOp");
+  changeOp(waitOp);
+}
+
 void DockOp::onChargerConnected(){
   battery.setIsDocked(true);                
   changeOp(chargeOp);

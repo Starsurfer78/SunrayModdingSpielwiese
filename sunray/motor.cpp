@@ -205,6 +205,9 @@ void Motor::setLinearAngularSpeed(float linear, float angular, bool useLinearRam
     linear = 0;
     angular = 0; 
   }
+  //if (abs(angular) < 0.05) angular = 0;                          //MrTree
+  if (abs(linear) < MOTOR_MIN_SPEED * 0.7) linear = 0;                            //MrTree
+
   if (angular == 0) resetAngularMotionMeasurement();                          //MrTree
   if (linear == 0) resetLinearMotionMeasurement();                            //MrTree
   
@@ -371,7 +374,13 @@ void Motor::stopImmediately(bool includeMowerMotor){
 }
 
 void Motor::run() {
-  //if (millis() < lastControlTime + 50) return;
+
+  currTime = millis();
+  deltaControlTimeMs =  currTime - lastControlTime;
+  deltaControlTimeSec = (float)deltaControlTimeMs/1000.0;
+  lastControlTime = currTime;
+  
+  if (deltaControlTimeMs < 15) return;
 
 
   //Change to stopimmediately!
@@ -446,11 +455,6 @@ void Motor::run() {
   motorLeftTicks += ticksLeft;
   motorRightTicks += ticksRight;
   motorMowTicks += ticksMow;
-
-  currTime = millis();
-  deltaControlTimeMs =  currTime - lastControlTime;
-  deltaControlTimeSec = (float)deltaControlTimeMs/1000.0;
-  lastControlTime = currTime;
   
   lp005 = 1 - 0.05*deltaControlTimeSec;
   lp01 = 1 - 0.1*deltaControlTimeSec; //Very Very slow
@@ -978,8 +982,11 @@ void Motor::control(){
   //CONSOLE.print("motorLeftPID.y:                  ");CONSOLE.println(motorLeftPID.y);
   motorLeftPWMCurr = motorLeftPWMCurr + motorLeftPID.y;
   //CONSOLE.print("pwmcurr:  ");CONSOLE.println(motorLeftPWMCurr);  
-  if (motorLeftRpmSet > 0) motorLeftPWMCurr = min( max(0, (int)motorLeftPWMCurr), pwmMax); // 0.. pwmMax  //MrTree Bugfix deleted =
-  if (motorLeftRpmSet < 0) motorLeftPWMCurr = max(-pwmMax, min(0, (int)motorLeftPWMCurr));  // -pwmMax..0
+  //if (motorLeftRpmSet > 0) motorLeftPWMCurr = min( max(0, (int)motorLeftPWMCurr), pwmMax); // 0.. pwmMax  //MrTree Bugfix deleted =
+  //if (motorLeftRpmSet < 0) motorLeftPWMCurr = max(-pwmMax, min(0, (int)motorLeftPWMCurr));  // -pwmMax..0
+
+  if (motorLeftRpmSet > 0) motorLeftPWMCurr = constrain(motorLeftPWMCurr,20,255); // 0.. pwmMax  //MrTree Bugfix deleted =
+  if (motorLeftRpmSet < 0) motorLeftPWMCurr = constrain(motorLeftPWMCurr,-255,-20);  // -pwmMax..0
   //if (abs(motorLeftPWMCurr) < 10) motorLeftPWMCurr = 0;
   //########################  Calculate PWM for right driving motor ############################
   
@@ -994,8 +1001,11 @@ void Motor::control(){
   motorRightPID.compute();
   motorRightPWMCurr = motorRightPWMCurr + motorRightPID.y;
 
-  if (motorRightRpmSet > 0) motorRightPWMCurr = min( max(0, (int)motorRightPWMCurr), pwmMax);  // 0.. pwmMax //MrTree Bugfix deleted =
-  if (motorRightRpmSet < 0) motorRightPWMCurr = max(-pwmMax, min(0, (int)motorRightPWMCurr));   // -pwmMax..0  
+  //if (motorRightRpmSet > 0) motorRightPWMCurr = min( max(0, (int)motorRightPWMCurr), pwmMax);  // 0.. pwmMax //MrTree Bugfix deleted =
+  //if (motorRightRpmSet < 0) motorRightPWMCurr = max(-pwmMax, min(0, (int)motorRightPWMCurr));   // -pwmMax..0  
+
+  if (motorRightRpmSet > 0) motorRightPWMCurr = constrain(motorRightPWMCurr,20,255);  // 0.. pwmMax //MrTree Bugfix deleted =
+  if (motorRightRpmSet < 0) motorRightPWMCurr = constrain(motorRightPWMCurr,-255,-20);   // -pwmMax..0  
   //if (abs(motorRightPWMCurr) < 10) motorRightPWMCurr = 0;
   //########################  Calculate PWM for mow motor ############################
 
@@ -1019,8 +1029,11 @@ void Motor::control(){
     motorMowPID.compute();
     motorMowPWMCurr = motorMowPWMCurr + motorMowPID.y;
 
-    if (motorMowRpmSet > 0) motorMowPWMCurr = min( max(0, (int)motorMowPWMCurr), pwmMax);  // 0.. pwmMax
-    if (motorMowRpmSet < 0) motorMowPWMCurr = max(-pwmMax, min(0, (int)motorMowPWMCurr));   // -pwmMax..0  
+    //if (motorMowRpmSet > 0) motorMowPWMCurr = min( max(0, (int)motorMowPWMCurr), pwmMax);  // 0.. pwmMax
+    //if (motorMowRpmSet < 0) motorMowPWMCurr = max(-pwmMax, min(0, (int)motorMowPWMCurr));   // -pwmMax..0  
+
+    if (motorMowRpmSet > 0) motorMowPWMCurr = constrain(motorMowPWMCurr,20,255);  // 0.. pwmMax
+    if (motorMowRpmSet < 0) motorMowPWMCurr = constrain(motorMowPWMCurr,-255,-20);   // -pwmMax..0 
 
     if (motorMowRpmSet == 0){ //we use simple low pass when stopping mow motor
       motorMowPWMCurr = lp1 * motorMowPWMCurr + (1 - lp1) * motorMowPWMSet;
@@ -1032,6 +1045,8 @@ void Motor::control(){
       if (motorMowPWMSet > 0)motorMowPWMSet = mowPWM_RC; //MrTree
     } 
     motorMowPWMCurr = lp4 * motorMowPWMCurr + (1 - lp4) * motorMowPWMSet;     //MrTree slightly increased spinuprate (0.99|0.01) before)
+    if (motorMowPWMCurr > 0) motorMowPWMCurr = constrain(motorMowPWMCurr,20,255);  // 0.. pwmMax
+    if (motorMowPWMCurr < 0) motorMowPWMCurr = constrain(motorMowPWMCurr,-255,-20);   // -pwmMax..0 
   }                                                                                                            //MrTree
   
   //set PWM for all motors

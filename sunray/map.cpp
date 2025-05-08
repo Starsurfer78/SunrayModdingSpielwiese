@@ -938,7 +938,7 @@ void Map::setIsDocked(bool flag){
     useGPSfloatForPosEstimation = false;  
     useGPSfloatForDeltaEstimation = false;
     useIMU = true; // false
-    //shouldGpsReboot = true;
+    shouldGpsReboot = true;
   } else {
     wayMode = WAY_FREE;
     dockPointsIdx = 0;    
@@ -949,7 +949,7 @@ void Map::setIsDocked(bool flag){
     useGPSfloatForPosEstimation = true;    
     useGPSfloatForDeltaEstimation = true;
     useIMU = true;
-    //shouldGpsReboot = true;
+    shouldGpsReboot = true;
   }  
 }
 
@@ -979,10 +979,10 @@ bool Map::isTargetingDock(){
 
 bool Map::isAtGpsRebootPoint(){
   if (!maps.trackReverse){
-    return ((maps.wayMode == WAY_DOCK) && (dockPointsIdx-1 == DOCK_POINT_GPS_REBOOT)); 
+    return ((maps.wayMode == WAY_DOCK) && (maps.dockPointsIdx-1 == DOCK_POINT_GPS_REBOOT)); 
   }
   if (maps.trackReverse){
-    return ((maps.wayMode == WAY_DOCK) && (dockPointsIdx+1 == DOCK_POINT_GPS_REBOOT));  
+    return ((maps.wayMode == WAY_DOCK) && (maps.dockPointsIdx+1 == DOCK_POINT_GPS_REBOOT));  
   }
   
 }
@@ -1437,9 +1437,11 @@ bool Map::nextDockPoint(bool sim){
       } else {
         trackSlow = false;
       }
-      if (!sim && dockPointsIdx == dockPoints.numPoints){ //MrTree dont use GPS for last point approach
+      if (!sim && maps.isBetweenLastAndNextToLastDockPoint() && wayMode == WAY_DOCK){ //MrTree dont use GPS for last point approach
         useGPSfixForPosEstimation = false;
-        useGPSfixForDeltaEstimation = false; 
+        useGPSfixForDeltaEstimation = false;
+        useGPSfloatForPosEstimation = false;    
+        useGPSfloatForDeltaEstimation = false; 
       } else {
         if (!sim) useGPSfixForPosEstimation = true;
         if (!sim) useGPSfixForDeltaEstimation = true;      
@@ -1454,13 +1456,14 @@ bool Map::nextDockPoint(bool sim){
     } 
   } else if (shouldMow){
     // should undock
-    if ((dockPointsIdx < DOCK_POINT_GPS_REBOOT-1) || (dockPointsIdx > DOCK_POINT_GPS_REBOOT+1)) shouldGpsReboot = true;
+    
     if (dockPointsIdx > 0){               
       if (!sim) {
+        if (dockPointsIdx > DOCK_POINT_GPS_REBOOT) shouldGpsReboot = true;
         lastTargetPoint.assign(targetPoint);
         dockPointsIdx--;
         trackReverse = (DOCK_FRONT_SIDE) && (dockPointsIdx >= DOCK_REVERSE_POINT) ; // undock reverse only in dock
-        if (dockPointsIdx == dockPoints.numPoints-1){ //MrTree dont use GPS for point before dock approach
+        if (maps.isBetweenLastAndNextToLastDockPoint() && wayMode == WAY_DOCK){ //MrTree dont use GPS for point before dock approach
           useGPSfixForPosEstimation = false;
           useGPSfixForDeltaEstimation = false;
         } 

@@ -84,7 +84,8 @@ class Op {
     virtual void onChargerDisconnected();
     virtual void onBadChargingContactDetected();    
     virtual void onChargerConnected();    
-    virtual void onChargingCompleted();              
+    virtual void onChargingCompleted();
+    virtual void onWaitCommand();              
     virtual void onImuTilt();
     virtual void onImuError();
     virtual float getDockDistance();
@@ -142,7 +143,8 @@ class MowOp: public Op {
     virtual void onObstacleRotation() override;
     virtual void onTargetReached() override;    
     virtual void onKidnapped(bool state) override;   
-    virtual void onNoFurtherWaypoints() override;     
+    virtual void onNoFurtherWaypoints() override;
+    virtual void onWaitCommand() override;     
     virtual void onImuTilt() override;
     virtual void onImuError() override;
 };
@@ -167,7 +169,8 @@ class DockOp: public Op {
     virtual void onDockGpsReboot() override;              
     virtual void onGpsNoSignal() override;
     virtual void onKidnapped(bool state) override;
-    virtual void onChargerConnected() override;   
+    virtual void onChargerConnected() override;
+    virtual void onWaitCommand() override;   
 };
 
 // charging op
@@ -323,7 +326,7 @@ class ErrorOp: public Op {
     virtual void run() override;
 };
 
-extern unsigned int deltaTime;
+extern unsigned long deltaTime;
 
 extern ChargeOp chargeOp;
 extern ErrorOp errorOp;

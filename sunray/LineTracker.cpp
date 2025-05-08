@@ -370,7 +370,8 @@ void noUnDockRotation(){
         unDockTimer = false;
         maps.dockPointsIdx--;
         //targetReached = true;
-        activeOp->onGpsJump();    
+        waitOp.waitTime = 15000;
+        triggerWaitCommand();    
       } 
     }
   } else {

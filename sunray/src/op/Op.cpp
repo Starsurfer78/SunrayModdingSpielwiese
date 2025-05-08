@@ -270,6 +270,9 @@ void Op::onTimetableStartMowing(){
 void Op::onTimetableStopMowing(){    
 }
 
+void Op::onWaitCommand(){
+}
+
 void Op::onImuTilt(){
 }
 

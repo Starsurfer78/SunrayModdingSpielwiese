@@ -186,6 +186,7 @@ void start();
 void run();
 void setOperation(OperationType op, bool allowRepeat = false);
 void triggerMotorMowWait();
+void triggerWaitCommand();
 void triggerGpsJump();
 void triggerMotorMowStall(); //MrTree
 void triggerObstacle();

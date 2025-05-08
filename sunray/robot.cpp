@@ -141,7 +141,7 @@ OperationType stateOp = OP_IDLE; // operation-mode
 Sensor stateSensor = SENS_NONE; // last triggered sensor
 
 unsigned int robot_control_cycle = ROBOT_IDLE_CYCLE;
-unsigned int deltaTime = 0; 
+unsigned long deltaTime = 0; 
 unsigned long timeLast = 0;
 unsigned long controlLoops = 0;
 String stateOpText = "";  // current operation as text
@@ -768,6 +768,10 @@ bool robotShouldBeInMotion(){
     stateInMotionLP = false;
   }
   return stateInMotionLP;
+}
+
+void triggerWaitCommand(){
+  activeOp->onWaitCommand();
 }
 
 void triggerMotorMowWait(){
