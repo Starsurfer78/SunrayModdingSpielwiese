@@ -812,8 +812,8 @@ void triggerObstacleRotation(){
     // finish
   //  activeOp->onNoFurtherWaypoints();
   //}
-  if (robotShouldRotateLeft()) maps.setObstaclePosition(stateX, stateY, -135.0, 0.2, OBSTACLE_DIAMETER);
-  if (robotShouldRotateRight()) maps.setObstaclePosition(stateX, stateY, 135.0, 0.2, OBSTACLE_DIAMETER);
+  if (robotShouldRotateLeft()) maps.setObstaclePosition(stateX, stateY, -135.0, ESCAPE_FORWARD_WAY, OBSTACLE_DIAMETER);
+  if (robotShouldRotateRight()) maps.setObstaclePosition(stateX, stateY, 135.0, ESCAPE_FORWARD_WAY, OBSTACLE_DIAMETER);
   resetStateEstimation();
   resetLinearMotionMeasurement();
   resetAngularMotionMeasurement();
@@ -942,7 +942,8 @@ bool detectObstacle(){
     } else {
       CONSOLE.println("BUMPER: bumper right obstacle!");
       maps.setObstaclePosition(stateX, stateY, -35.0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);
-    }  
+    }
+    maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);  
     triggerObstacle();    
     return true;
   }
@@ -952,6 +953,7 @@ bool detectObstacle(){
     if (SONAR_TRIGGER_OBSTACLES){
       CONSOLE.println("SONAR_TRIGGER_OBSTACLES: sonar obstacle!");            
       statMowSonarCounter++;
+      maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);
       triggerObstacle();
       return true;
     }        
@@ -968,7 +970,7 @@ bool detectObstacle(){
         //resetLinearMotionMeasurement();
         //resetAngularMotionMeasurement();
         //resetStateEstimation();
-        maps.setObstaclePosition(stateX, stateY, 0, 0.10, OBSTACLE_DIAMETER);
+        maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);
         triggerObstacle();
         return true;
       }
@@ -991,7 +993,7 @@ bool detectObstacle(){
           //resetLinearMotionMeasurement();
           //resetAngularMotionMeasurement();
           //resetStateEstimation();
-          maps.setObstaclePosition(stateX, stateY, 0, 0.10, OBSTACLE_DIAMETER);
+          maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);
           triggerObstacle();
           return true;
         
@@ -1018,7 +1020,7 @@ bool detectObstacle(){
       //resetStateEstimation();
       //resetAngularMotionMeasurement();
       //resetLinearMotionMeasurement();
-      maps.setObstaclePosition(stateX, stateY, 0, 0.10, OBSTACLE_DIAMETER); //need to add sides            
+      maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER); //need to add sides            
       triggerObstacle();
       return true;            
     }
@@ -1034,7 +1036,7 @@ bool detectObstacle(){
       //resetStateEstimation();
       //resetLinearMotionMeasurement();
       //resetAngularMotionMeasurement();
-      maps.setObstaclePosition(stateX, stateY, 0, 0.10, OBSTACLE_DIAMETER);        
+      maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);        
       triggerObstacle();
       return true;           
     }
@@ -1061,7 +1063,7 @@ bool detectObstacleRotation(){
       //resetStateEstimation();
       //resetLinearMotionMeasurement();
       //resetAngularMotionMeasurement();
-      maps.setObstaclePosition(stateX, stateY, 0, 0.10, OBSTACLE_DIAMETER);     
+      maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);     
       triggerObstacle(); //MrTree changed to trigger freewheel dependent        
     }
     return true;
@@ -1082,7 +1084,8 @@ bool detectObstacleRotation(){
         CONSOLE.println("Overload on traction motors while robot should rotate! Assuming obstacle in the front!");
         //resetStateEstimation();
         //resetLinearMotionMeasurement();
-        //resetAngularMotionMeasurement();    
+        //resetAngularMotionMeasurement();
+        maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);    
         triggerObstacle();
         return true;
       }
