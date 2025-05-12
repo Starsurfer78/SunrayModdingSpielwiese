@@ -36,6 +36,7 @@ void GpsWaitFixOp::end(){
 
 void GpsWaitFixOp::run(){
     battery.resetIdle();
+    if (!buzzer.isPlaying()) buzzer.sound(SND_GPSWAITFIX);
     if (GPS_RESET_WAIT_FIX){
         if (millis() > resetGpsTimer) {
             CONSOLE.println("GpsWaitFixOp::run - reset gps timer triggered! Resetting GPS!");
@@ -44,6 +45,7 @@ void GpsWaitFixOp::run(){
         }
     }
     if (gps.solution == SOL_FIXED){
+        buzzer.sound(SND_READY);
         motor.setMowState(true);
         changeOp(*nextOp);
     }     

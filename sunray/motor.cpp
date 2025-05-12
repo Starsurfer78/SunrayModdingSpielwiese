@@ -168,12 +168,12 @@ void Motor::setMowPwm( int val ){
 
 bool Motor::waitMowMotor() {
   if (millis() < motor.motorMowSpinUpTime + MOWSPINUPTIME){
-      // wait until mowing motor is running or stopping
-      if (!buzzer.isPlaying()) buzzer.sound(SND_MOWSTART, true);
-      if (!waitSpinUp) CONSOLE.println("Motor::waitMowMotor() trying to wait for mowmotor....");
-      waitSpinUp = true;
-      motorMowSpunUp = false;
-    } else waitSpinUp = false;
+    // wait until mowing motor is running or stopping
+    if (!buzzer.isPlaying()) buzzer.sound(SND_MOWSTART, true);
+    if (!waitSpinUp) CONSOLE.println("Motor::waitMowMotor() trying to wait for mowmotor....");
+    waitSpinUp = true;
+    motorMowSpunUp = false;
+  } else waitSpinUp = false;
   return waitSpinUp;
 }
 
@@ -280,8 +280,8 @@ void Motor::setMowState(bool switchOn){
       switchedOn = true;
       mowPwm = MOW_PWM_NORMAL; //try circumvent the value load of sd, motor.cpp value at begin seems to get overwritten
       motorMowSpinUpTime = millis();
-      waitMowMotor();
-      if (!buzzer.isPlaying()) buzzer.sound(SND_READY, true);
+      //waitMowMotor();
+      if (!buzzer.isPlaying()) buzzer.sound(SND_MOWSTART, true);
       if (toggleMowDir){
         // toggle mowing motor direction each mow motor start
         motorMowForwardSet = !motorMowForwardSet;
@@ -290,19 +290,20 @@ void Motor::setMowState(bool switchOn){
       } else {      
         motorMowPWMSet = mowPwm;  
       }
-      //control();
       CONSOLE.print("Motor::setMowState ");
       CONSOLE.print(switchOn);
       CONSOLE.print(" PWM: ");
       CONSOLE.println(motorMowPWMSet);
+      triggerMotorMowWait();
     } else {
-      //motorMowSpinUpTime = millis();
+      motorMowSpinUpTime = millis();
       //waitMowMotor();
       motorMowPWMSet = 0;
       motorMowRpmSet = 0;
       switchedOn = false;
       motorMowSpunUp = false;  
-      CONSOLE.println("Motor::setMowState PWM OFF");  
+      CONSOLE.println("Motor::setMowState PWM OFF");
+      triggerMotorMowWait();  
       //motorMowPWMCurr = 0; MrTree when we switchoff, there is no need for mowdriver to go to full break. its no emergency, we can use the ramp 
     }
   }
@@ -316,7 +317,6 @@ void Motor::setMowState(bool switchOn){
       }
       switchedOn = true; 
       motorMowSpinUpTime = millis();
-      waitMowMotor();
       if (!buzzer.isPlaying()) buzzer.sound(SND_MOWSTART, true);
       if (toggleMowDir){
         // toggle mowing motor direction each mow motor start
@@ -326,18 +326,19 @@ void Motor::setMowState(bool switchOn){
       } else {      
         motorMowRpmSet = mowRpm;  
       }
-      //control();
       CONSOLE.print("Motor::setMowState ");
       CONSOLE.print(switchOn);
       CONSOLE.print(" RPM: ");
       CONSOLE.println(motorMowRpmSet);
+      triggerMotorMowWait();
     } else {
       CONSOLE.println("Motor::setMowState RPM OFF");
-      //motorMowSpinUpTime = millis();
+      motorMowSpinUpTime = millis();
       //waitMowMotor();
       motorMowRpmSet = 0;
       switchedOn = false;
-      motorMowSpunUp = false;  
+      motorMowSpunUp = false;
+      triggerMotorMowWait();  
     }
   } 
 }
@@ -349,15 +350,18 @@ void Motor::stopImmediately(bool includeMowerMotor){
   motorRightRpmSet = 0;
   motorLeftRpmSet = 0;      
   motorLeftPWMCurr = 0;
-  motorRightPWMCurr = 0;   
+  motorRightPWMCurr = 0;
+   
   if (includeMowerMotor) {
-    switchedOn = false;
+    //switchedOn = false;
     motorMowSpunUp = false;  
     motorMowPWMSet = 0;
     //motorMowPWMCurr = 0;//MrTree
     motorMowRpmSet = 0;//MrTree
-    //motorMowRpmCurr = 0;//MrTree    
+    //motorMowRpmCurr = 0;//MrTree
+    setMowState(false);    
   }
+  setLinearAngularSpeed(0, 0, false);  
   speedPWM(motorLeftPWMCurr, motorRightPWMCurr, motorMowPWMCurr);
   // reset PID
   motorLeftPID.reset();
@@ -653,6 +657,11 @@ float Motor::adaptiveSpeed(){
       x2 = (abs(motorMowRpmSet) - MOW_RPM_DEADZONE) * 1000;         
       y1 = 100;
       y2 = MOTOR_MIN_SPEED/linearCurrSet*100; //linearSpeedSet
+      
+      if (TEST_WAIT_BEFORE_REVERSE && (abs(motorMowRpmCurrLPFast) > (abs(motorMowRpmSet) * (MOW_RPMtr_STALL)/100)) && (abs(motorMowRpmCurrLPFast) < (abs(motorMowRpmSet) * (MOW_RPMtr_STALL+MOW_RPMtr_WAITZONE)/100))){
+        //waitOp.waitTime = 3000;
+        triggerWaitCommand(3000);
+      }
     }
 
     y = map(x, x1, x2, y2, y1);
@@ -781,7 +790,7 @@ void Motor::changeSpeedSet(){
 
 // check mow motor RPM stalls                                                          
 void Motor::checkMotorMowStall(){ 
-  if (ESCAPE_LAWN && switchedOn && !waitSpinUp && !RC_Mode && !robotShouldWait()) {
+  if (ESCAPE_LAWN && switchedOn && !RC_Mode && !robotShouldWait()) {
     static unsigned long lastStalltime = 0;
     unsigned long deltaControlTimeSec = (millis() - lastMowStallCheckTime);
     lastMowStallCheckTime = millis();

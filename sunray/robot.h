@@ -186,7 +186,7 @@ void start();
 void run();
 void setOperation(OperationType op, bool allowRepeat = false);
 void triggerMotorMowWait();
-void triggerWaitCommand();
+void triggerWaitCommand(unsigned int waitTime = 1000);
 void triggerGpsJump();
 void triggerMotorMowStall(); //MrTree
 void triggerObstacle();

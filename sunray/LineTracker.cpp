@@ -293,7 +293,7 @@ void gpsConditions() {
       activeOp->onGpsFixTimeout();
     }
   }
-
+  //CONSOLE.print(maps.shouldGpsReboot); CONSOLE.print(" <- shouldreboot | isatgpsrebootpoint -> "); CONSOLE.print(maps.isAtGpsRebootPoint()); CONSOLE.print(" | dockPointIdx: ");CONSOLE.println(maps.dockPointsIdx);
   if (maps.shouldGpsReboot && maps.isAtGpsRebootPoint()){
     activeOp->onDockGpsReboot();
   }
@@ -328,6 +328,7 @@ void gpsConditions() {
 }
 
 void noDockRotation() {
+  if (maps.wayMode != WAY_DOCK) return;
   if ((maps.isTargetingLastDockPoint() && !maps.isUndocking())){        //MrTree step in algorithm if allowDockRotation (computed in maps.cpp) is false and mower is not undocking
     if (!dockTimer){                                                  //set helper bool to start a timer and print info once
       reachedPointBeforeDockTime = millis();                          //start a timer when going to last dockpoint
@@ -339,6 +340,7 @@ void noDockRotation() {
       if (lastTargetDist > DOCK_NO_ROTATION_DISTANCE){                          //testing easier approach for DOCK_NO_ROTATION setup
         angular = 0;
         linear = DOCK_NO_ROTATION_SPEED;
+        targetReached = false;
         if (!buzzer.isPlaying()) buzzer.sound(SND_ERROR, true);                  
       }
       if (millis() > reachedPointBeforeDockTime+DOCK_NO_ROTATION_TIMER){      //check the time until mower has to reach the charger and triger obstacle if not reached
@@ -350,10 +352,12 @@ void noDockRotation() {
   } else {
       dockTimer = false;     
   }
+  return;
 }
 
 void noUnDockRotation(){
-  if (maps.isBetweenLastAndNextToLastDockPoint() && maps.trackReverse){
+  if (maps.wayMode != WAY_DOCK) return;
+  if (maps.isBetweenLastAndNextToLastDockPoint() && maps.isUndocking()){
     if (!unDockTimer){                                                  //set helper bool to start a timer and print info once
       reachedPointBeforeDockTime = millis();                          //start a timer when going to last dockpoint
       unDockTimer = true;                                               //enables following code
@@ -370,14 +374,14 @@ void noUnDockRotation(){
         unDockTimer = false;
         maps.dockPointsIdx--;
         //targetReached = true;
-        waitOp.waitTime = 15000;
-        triggerWaitCommand();    
+        //waitOp.waitTime = 15000;
+        triggerWaitCommand(15000);    
       } 
     }
   } else {
       unDockTimer = false;     
   }
-    
+  return;  
 }
 
 void checkMowAllowed() {

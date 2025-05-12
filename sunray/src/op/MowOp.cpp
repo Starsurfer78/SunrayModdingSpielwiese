@@ -346,7 +346,7 @@ void MowOp::onNoFurtherWaypoints(){
 void MowOp::onWaitCommand(){
     CONSOLE.println("MowOp::onWaitCommand: Waiting!");
     motor.setLinearAngularSpeed(0,0, false); 
-    motor.setMowState(false);
+    //motor.setMowState(false);
     changeOp(waitOp, true); 
 }
 

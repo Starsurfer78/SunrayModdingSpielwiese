@@ -103,6 +103,7 @@ void DockOp::onDockGpsReboot(){
   CONSOLE.println("DockOp::onDockGpsReboot");
   //maps.shouldGpsReboot = false;
   motor.setLinearAngularSpeed(0,0, false);
+  motor.setMowState(false);
   changeOp(dockGpsRebootOp, true);
 }
 
@@ -159,7 +160,7 @@ void DockOp::onObstacle(){
             return;
         }
     } 
-    if ((OBSTACLE_AVOIDANCE) && (maps.wayMode != WAY_DOCK)){    
+    if (OBSTACLE_AVOIDANCE && (maps.wayMode != WAY_DOCK)){    
         changeOp(escapeReverseOp, true);      
     } else {     
         stateSensor = SENS_OBSTACLE;
@@ -170,7 +171,7 @@ void DockOp::onObstacle(){
 
 void DockOp::onWaitCommand(){
   CONSOLE.println("DockOp::onWaitCommand trigger waitOp");
-  changeOp(waitOp);
+  changeOp(waitOp, true);
 }
 
 void DockOp::onChargerConnected(){

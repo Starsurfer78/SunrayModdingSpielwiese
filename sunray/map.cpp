@@ -938,7 +938,7 @@ void Map::setIsDocked(bool flag){
     useGPSfloatForPosEstimation = false;  
     useGPSfloatForDeltaEstimation = false;
     useIMU = true; // false
-    shouldGpsReboot = true;
+    //shouldGpsReboot = true;
   } else {
     wayMode = WAY_FREE;
     dockPointsIdx = 0;    
@@ -967,6 +967,7 @@ bool Map::isNearDock(){
 
 bool Map::isBetweenLastAndNextToLastDockPoint(){
   //return true;
+  //shouldGpsReboot = true;
   return (
       ((isUndocking()) && ((isTargetingLastDockPoint()) || (isTargetingNextToLastDockPoint())))  || 
       ((isDocking())   && (isTargetingLastDockPoint()))   
@@ -978,11 +979,11 @@ bool Map::isTargetingDock(){
 }
 
 bool Map::isAtGpsRebootPoint(){
-  if (!maps.trackReverse){
-    return ((maps.wayMode == WAY_DOCK) && (maps.dockPointsIdx-1 == DOCK_POINT_GPS_REBOOT)); 
+  if (maps.isDocking()){
+    return (maps.dockPointsIdx-1 == DOCK_POINT_GPS_REBOOT); 
   }
-  if (maps.trackReverse){
-    return ((maps.wayMode == WAY_DOCK) && (maps.dockPointsIdx+1 == DOCK_POINT_GPS_REBOOT));  
+  if (maps.isUndocking()){
+    return (maps.dockPointsIdx == DOCK_POINT_GPS_REBOOT);  
   }
   
 }
@@ -1089,6 +1090,14 @@ bool Map::startMowing(float stateX, float stateY){
       src.assign(dockPoints.points[0]);
       
     } else {
+      //MrTree. please remove me
+      useGPSfixForPosEstimation = true;
+      useGPSfixForDeltaEstimation = true;
+      useGPSfloatForPosEstimation = true;    
+      useGPSfloatForDeltaEstimation = true;
+      useIMU = true;
+      shouldGpsReboot = true;
+      //MrTree. please remove me end
       wayMode = WAY_FREE;      
       freePointsIdx = 0;    
     }        
@@ -1414,7 +1423,7 @@ bool Map::nextDockPoint(bool sim){
   CONSOLE.println();*/
   if (shouldDock){
     // should dock  
-    if ((dockPointsIdx < DOCK_POINT_GPS_REBOOT-1) || (dockPointsIdx > DOCK_POINT_GPS_REBOOT+1)) shouldGpsReboot = true;
+    if ((dockPointsIdx+1 < DOCK_POINT_GPS_REBOOT) || (dockPointsIdx-1 > DOCK_POINT_GPS_REBOOT)) shouldGpsReboot = true;
     if (dockPointsIdx+1 < dockPoints.numPoints){
       if (!sim) { 
         lastTargetPoint.assign(targetPoint);
@@ -1459,7 +1468,7 @@ bool Map::nextDockPoint(bool sim){
     
     if (dockPointsIdx > 0){               
       if (!sim) {
-        if (dockPointsIdx > DOCK_POINT_GPS_REBOOT) shouldGpsReboot = true;
+        if (dockPointsIdx >= DOCK_POINT_GPS_REBOOT) shouldGpsReboot = true;
         lastTargetPoint.assign(targetPoint);
         dockPointsIdx--;
         trackReverse = (DOCK_FRONT_SIDE) && (dockPointsIdx >= DOCK_REVERSE_POINT) ; // undock reverse only in dock

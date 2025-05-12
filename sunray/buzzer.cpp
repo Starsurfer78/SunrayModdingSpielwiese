@@ -82,6 +82,29 @@ void Buzzer::run(){
         case 4:            nextToneTime = 0;       break;
       }
       break;
+    case SND_SOS:
+      switch (toneIdx){
+        case 0: tone(4200); nextToneTime = m + 150; break;
+        case 1: noTone();  nextToneTime = m + 200; break;
+        case 2: tone(4200); nextToneTime = m + 150; break;
+        case 3: noTone();  nextToneTime = m + 200; break;
+        case 4: tone(4200); nextToneTime = m + 150; break;
+        case 5: noTone();  nextToneTime = m + 200; break;
+        case 6: tone(4200); nextToneTime = m + 800; break;
+        case 7: noTone();  nextToneTime = m + 200; break;
+        case 8: tone(4200); nextToneTime = m + 800; break;
+        case 9: noTone();  nextToneTime = m + 200; break;
+        case 10: tone(4200); nextToneTime = m + 800; break;
+        case 11: noTone();  nextToneTime = m + 200; break;
+        case 12: tone(4200); nextToneTime = m + 150; break;
+        case 13: noTone();  nextToneTime = m + 200; break;
+        case 14: tone(4200); nextToneTime = m + 150; break;
+        case 15: noTone();  nextToneTime = m + 200; break;
+        case 16: tone(4200); nextToneTime = m + 150; break;
+        case 17: noTone();  nextToneTime = m + 4000; break;
+        case 18:            nextToneTime = 0;       break;
+      }
+      break;
     case SND_WAIT:
       switch (toneIdx){
         case 0: tone(4200); nextToneTime = m + 200; break;
@@ -97,6 +120,24 @@ void Buzzer::run(){
         case 1: noTone();  nextToneTime = m + 100; break;
         case 2: tone(4200); nextToneTime = m + 100; break;
         case 3: noTone();  nextToneTime = m + 100; break;
+        case 4:            nextToneTime = 0;       break;
+      }
+      break;
+    case SND_GPSREBOOT:
+      switch (toneIdx){
+        case 0: tone(4200); nextToneTime = m + 250; break;
+        case 1: noTone();  nextToneTime = m + 250; break;
+        case 2: tone(3800); nextToneTime = m + 250; break;
+        case 3: noTone();  nextToneTime = m + 3250; break;
+        case 4:            nextToneTime = 0;       break;
+      }
+      break;
+    case SND_GPSWAITFIX:
+      switch (toneIdx){
+        case 0: tone(4200); nextToneTime = m + 500; break;
+        case 1: noTone();  nextToneTime = m + 250; break;
+        case 2: tone(4600); nextToneTime = m + 250; break;
+        case 3: noTone();  nextToneTime = m + 2000; break;
         case 4:            nextToneTime = 0;       break;
       }
       break;

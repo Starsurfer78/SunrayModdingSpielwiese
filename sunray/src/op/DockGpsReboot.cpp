@@ -29,12 +29,14 @@ void DockGpsRebootOp::end(){
 
 void DockGpsRebootOp::run(){
     battery.resetIdle();
+    if (!buzzer.isPlaying()) buzzer.sound(SND_GPSREBOOT, true);
     if ((millis() > rebootGpsTime) && (gps.solution == SOL_FIXED)){
         // restart current operation from new position (restart path planning)
         CONSOLE.println("Got FIX after rebooting GPS, continuing... ");
         rebootGpsTime = 0;
         //motor.stopImmediately(false);
         //motor.setMowState(true);
+        buzzer.sound(SND_READY, true);
         changeOp(*nextOp);    // restart current operation      
     }
 }

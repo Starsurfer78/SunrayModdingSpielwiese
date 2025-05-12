@@ -91,7 +91,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define ROBOT_IDLE_CYCLE            50    // (ms) cycletime when charging
 //Experimental Modfunctions/Options/Speeds/Time etc. for different stuff and movement operations. Please read the descriptions. Cheers.
 //Mower general times and speeds with their condition parameters, this section is the easiest to be tuned for one´s needs... so feel free and just tune to what you want to see on the lawn 
-#define MOWSPINUPTIME               5000  // (ms) Adds time to rotate mowingdisc before starting moving, use high value if you enable ESCAPE_LAWN for good reading of idle mow motor RPM
+#define MOWSPINUPTIME               7000  // (ms) Adds time to rotate mowingdisc before starting moving, use high value if you enable ESCAPE_LAWN for good reading of idle mow motor RPM
 #define OVERLOADSPEED               0.16  // (m/s) if there is a overloadcurrent of a motordriver, mower will use OVERLOADSPEED
 #define TRACKSLOWSPEED              0.25  // (m/s) e.g the docking speed or functions of the future
 #define NEARWAYPOINTSPEED           0.25  // (m/s) the speed of mower when reaching/leaving a waypoint
@@ -99,8 +99,8 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define FLOATSPEED                  0.25  // (m/s) on GPS FLOAT SOLUTION, mower will use FLOATSPEED
 #define SONARSPEED                  0.15  // (m/s) if sonar enabled and used, on sonar trigger mower will use SONARSPEED
 #define OBSTACLEAVOIDANCESPEED      0.35  // (m/s) on obstacle evade operations, mower will use OBSTACLEAVOIDANCESPEED
-#define DOCKSPEED                   0.60
-#define DOCKPATHSPEED               0.30
+#define DOCKSPEED                   0.60  // (m/s) the speed mower will use to reach the dock path after mowing or when triggered docking
+#define DOCKPATHSPEED               0.30  // (m/s) the speed mower will use on the dockpath
 #define ESCAPE_REVERSE_WAY          0.40  // (m) distance in meters the mover will drive reverse in escapeReverseOp if obstacle triggered eg. by bumper org gps no speed
 #define ESCAPE_FORWARD_WAY          0.35  // (m) distance in meters the mover will drive forward in escapeForwardOp if obstacle triggered by OBSTACLE_ROTATION (no rotation)
 #define GLOBALSPEEDLIMIT            true  // if true, MOTOR_MAX_SPEED and MOTOR_MIN_SPEED will limit possible code bugs or inputs directly in motor.cpp        
@@ -109,7 +109,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define DISTANCE_RAMP               true  // is using NEARWAYPOINTDISTANCE, MOTOR_MIN_SPEED and the actual setspeed to calculate an indirect deceleration ramp to the next waypoint, if this is true, NEARWAYPOINTSPEED in linetracker.cpp is disabled
 #define DISTANCE_RAMP_MINSPEED      0.15  // (m/s) this is the ramp minspeed
 #define ROTATION_RAMP               true  // uses a ramp for angletotargetfits
-#define ROTATION_RAMP_MAX           95    // (deg/s) maximum rotation speed
+#define ROTATION_RAMP_MAX           100    // (deg/s) maximum rotation speed
 #define ROTATION_RAMP_MIN           18    // (deg/s) minimum rotation speed
 //rotation speeds, also this is easy to tune for your expectations --> going to be changed to angularRamp() with less parameters
 //#define DOCKANGULARSPEED            35.0  // (deg/s) the turning rate of mower when docking (no change needed, keep low; tune at your needs if you must)
@@ -133,7 +133,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define ADAPTIVE_SPEED_MODE         2     // (1, 2) adaptive speed modes. mode 1 - uses mowmotorpower measurement for speeding up/down; mode 2 - uses rpm measurement of mowmotor for speeding up/down (2: best)
 #define MOWPOWERMAX_AUTO            false // (expirimental) uses highest actual measured mowPower during operation, if true MOWPOWERMAX is ignored
 #define MOWPOWERMIN                 10.0  // (Watt) idle Power of Mowmotor or minimum load power of mowmotor, if under this load mower will have maximum speed
-#define MOWPOWERMAX                 35.0  // (Watt) max load power of mowmotor, when hitting this load mower will be at minspeed
+#define MOWPOWERMAX                 35.0  // (Watt) max load power of mowmotor, when hitting this load mower will be at minspeed        
 #define MOW_RPM_DEADZONE             150  // (rpm) rpm deadzone before speed will be reduced, so if MOW_RPM_NORMAL is 3000, mower will start to reduce speed if rpm is below 2700 
 #define MOW_RPM_NORMAL              3200  // (3200)(rpm, only used if USE_MOW_RPM_SET = true) mow motor rpm for mowing (WARNING, you should check if your rpm output works as espected! if it does work, but the reading is wrong, you need to calculate the mowmotorticks per second according to realistic rpm!)
 #define MOW_RPM_SLOW                3400  // (3400)(rpm, only used if USE_MOW_RPM_SET = true) mow motor rpm when MOW_RPMtr_SLOW (%) of MOW_RPM_NORMAL (rpm) is met. Should be higher or the same as MOW_RPM_NORMAL
@@ -141,14 +141,19 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define MOW_PWM_NORMAL              185   // (pwm, only used if USE_MOW_RPM_SET = false) pwm of mow motor for normal mowing
 #define MOW_PWM_SLOW                205   // (pwm, only used if USE_MOW_RPM_SET = false) pwm of mow motor when during mowing a keepslow state is triggered. Should be higher or the same as MOW_PWM_NORMAL
 #define MOW_PWM_RETRY               235   // (pwm, only used if USE_MOW_RPM_SET = false) pwm of mow motor when during mowing a retryslow state is triggered (after escape lawn). Should be higher or the same as MOW_PWM_SLOW
-//escapeLawn operation, mower will backup on a mowmotor stall and retry with given values... after the first try and still stalling, it backs up and waits for mowmotor to recover
+//ESCAPELAWN operation, mower will backup on a mowmotor stall and retry with given values... after the first try and still stalling, it backs up and waits for mowmotor to recover
 #define ESCAPE_LAWN                 true  // mower drives reverse if true and RPM stall of mow motor is detected by more than MOW_RPMtr_STALL(percentage), only available if ENABLE_RPM_FAULT_DETECTION true (best)
 #define ESCAPE_LAWN_MODE             2    // (1, 2) escape lawn modes to trigger escape becouse of high motormow load: mode 1 - uses mowmotorpower for triggering, mode 2 - uses rpm for triggering (2: best)
 #define CHANGE_SPEED_SET            true  // if enabled and rpm or power triggers escape lawn or a keepslow state, mower will go slow with RETRYSLOWSPEED or KEEPSLOWSPEED with configured RETRYSLOWTIME or KEEPSLOWTIME. Also, in this states MOW_RPM/PWM for _SLOW/RETRY are used for the mowmotor set
 #define MOW_POWERtr_STALL           80    // (%, only used if ESCAPE_LAWN_MODE = 1) if power of mowmotor exceeds e.g 90% of MOWPOWERMAX, escapelawn is triggered 
 #define MOW_POWERtr_SLOW            70    // (%, only used if ESCAPE_LAWN_MODE = 1) if power of mowmotor exceeds e.g 70% of MOWPOWERMAX, keepslow is triggered
-#define MOW_RPMtr_STALL             65    // (70)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will back up with ESCAPELAWNDISTANCE and ESCAPELAWNSPEED and try again
+#define MOW_RPMtr_STALL             60    // (70)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will back up with ESCAPELAWNDISTANCE and ESCAPELAWNSPEED and try again
 #define MOW_RPMtr_SLOW              75    // (85)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will trigger a keepSlow state with KEEPSLOWSPEED
+//test
+#define TEST_WAIT_BEFORE_REVERSE    false
+#define MOW_RPMtr_WAITZONE          10
+#define MOW_RECOVERY_WAIT_TIME      3000
+//test
 #define ESCAPELAWNSPEED             0.35  // (m/s) speed of mower reverse due to MOW_RPM_STALL trigger
 #define ESCAPELAWNDISTANCE          0.5   // (m) distance mower reverses with ESCAPELAWNSPEED due to MOW_RPM_STALL triggered
 #define ESCAPELAWNWAITTIME          5000  // (ms) after reversing the second time within ESCAPELAWNTIMER, mower will wait for this time before continue (recover rpm)
@@ -161,54 +166,56 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define KEEPSLOWSPEED               0.25  // mower will use this speed if there is a rpm stall (%) of mowingblades defined by MOW_RPMtr_SLOW
 #define RETRYSLOWTIME               20000 // (ms) mower will continue slow with RETRY_SLOW_SPEED after ESCAPELAWN operation (reversing triggered by MOW_RPMtr_RETRY (%)) for RETRYSLOWTIME, if a MOW_RPMtr_SLOW will happen again in this retryslowstate, mower resets this timer until no rpm stall occurs in set time
 #define KEEPSLOWTIME                20000 // (ms) mower will continue slow with KEEP_SLOW_SPEED for given Time if MOW_RPMtr_SLOW (%) was met... if a MOW_RPMtr_SLOW will happen again during keepslowstate, mower resets this timer until no rpm stall occurs in set time.   
-//stanley options for experiments
+//STANLEY options for experiments
 #define MAP_STANLEY_CONTROL         true  // if true, stanley values will be mapped linear from MOTOR_MIN_SPEED-->MOTOR_MAX_SPEED with SC_P_*|SC_K_* to actual speedset of mower (recommended if you use high operation speeds)
 #define STANLEYNORMALMUL            false // if true, StanleyNormal parameters in Sunray-App will be multiplied by 10! (0,1 = 1) (for testing)
-//svol0s GPS reboot option after undocking-->mowing
+//GPS reboot for docking/undocking/retrydocking
 #define DOCK_GPS_REBOOT             true  // if false and DOCK_POINT_GPS_REBOOT is not 0, mower will wait at the DOCK_POINT_GPS_REBOOT point for fix without rebooting GPS, if false and DOCK_POINT_GPS_REBOOT = 0 this function is off (hopefully)
 #define DOCK_GPS_REBOOT_TIME        45000 // (ms) time to wait after rebooting gps for response from ublox? 
 //#define GPS_STABLETIME              30000 // (ms) GPS Time with fix solution, before continueing from DOCK_POINT_GPS_REBOOT after undock  
-#define DOCK_POINT_GPS_REBOOT       3     // 
-#define DOCK_SLOW_ONLY_LAST_POINTS  3     //
-#define DOCK_REVERSE_POINT          3
-//keep mower from rotating in dock by all means, needs situation dependent tuning, so be aware!
+#define DOCK_POINT_GPS_REBOOT       3     // dockpath point where GPS will be rebootet when undocking/docking/retrydocking
+#define DOCK_SLOW_ONLY_LAST_POINTS  3     // trackslow speed will bes used on last dockingpoint and hitting the charger
+#define DOCK_REVERSE_POINT          3     // mower will track reverse if freewheel is at backside (Ardumower) or forward (Landrumower) until at that point
+//DOCK options keep mower from rotating in dock by all means, needs situation dependent tuning, so be aware!
 #define DOCK_NO_ROTATION            true  // if true, rotation for the mower when reaching or leaving the last dockpoint is not allowed! Make sure mower comes just before the dock in a straight line from the point before, then the last point is the dockposition, on that path angular steering is not allowed!
-#define DOCK_NO_ROTATION_DISTANCE   0.60  // (m) distance to from prelast dockpoint to stop angular motion of mower, make sure mower comes straight to dock on a nice straight and long line. Angular will be 0 after the mower surpassed the prelast point to chargerconntacts and traveled for DOCK_NO_ROTATION DISTANCE, make sure the mower has fix and is not dangling around when this function takes over
+#define DOCK_NO_ROTATION_DISTANCE   0.60  // (m) distance to from prelast dockpoint to stop angular motion of mower, make sure mower comes straight to dock on a nice straight and long line. Angular will be 0 after the mower surpassed the prelast point to charger contacts and travel for DOCK_NO_ROTATION_DISTANCE, make sure the mower has fix and is not dangling around when this function triggers. Tuning is neccessary, but works very well. Mower is able to cover some Meters straight afterwards.
 #define DOCK_NO_ROTATION_TIMER      18000 // (ms) if mower doesnt hit the charger in given time after passing dockpoint before last dockpoint(charger), an obstacle will be triggered and mower will reverse to gps reboot point and try again.
 #define DOCK_NO_ROTATION_SPEED      0.20  // (m/s) (original it was 0.10, made it changeable...) when angular is not allowed while going to dockposition, this speed is used
-//GPS
+//GPS options
 #define GPS_COLD_RESET              true  // perform a cold reset of gps receiver instead a warm reset
 #define SOLUTION_TIMEOUT            5000  // (ms) communication timeout with ublox, original it is set to 1000 ms ... long cycle times of code like pathfinder will lead to an invalid solution
-#define GPS_RESET_WAIT_FIX          true  // reset GPS if mower is in a float timeout?
-#define GPS_RESET_WAIT_FIX_TIME     5    // (min) time in minutes to reset gps if mower is in a float timeout without getting fix within GPS_RESET_WAIT_FIX_TIME 
-#define NO_GPS_SIGNAL_TIMEOUT       20000 
-#define GPS_JUMP_WAIT               true
-#define GPS_JUMP_WAIT_TIME          30000
-
-//other
+#define GPS_RESET_WAIT_FIX          true  // reset GPS if mower is in a float timeout for GPS_RESET_WAIT_FIX_TIME?
+#define GPS_RESET_WAIT_FIX_TIME     5     // (min) time in minutes to reset gps if mower is in a float timeout without getting fix within GPS_RESET_WAIT_FIX_TIME 
+#define NO_GPS_SIGNAL_TIMEOUT       20000 //
+#define GPS_JUMP_WAIT               true  //
+#define GPS_JUMP_WAIT_TIME          30000 //
+//OTHER
 #define FLOAT_CALC                  1
 #define MOW_START_AT_WAYMOW         true  // mowmotor only starts if way state of mower is waymow for the first time, used for mowmotor not starting directly at dock, but at mow area. This is a onetime trigger that only works when mower is (---> undocking ) ---> wayfree ---> mowarea ---> start mowmotor. After this, mowmotor will behave like it used to be
 #define WATCHDOG_CONTINUE           false // set true if you have watchdog reset issues, mower will start mowing after rebooting
 #define WATCHDOG_TIME               16000 // (ms) resettimer for watchdog trigger
-//obstacle behaviour
+//OBSTACLES
 #define OBSTACLE_DETECTION_ROTATION true  // detect robot rotation stuck (requires IMU) (wheel at backside, popo situation)
 #define ROTATION_TIMEOUT            5000  // Timeout of rotation movement that triggers an obstacle with escapeReverse
 #define ROTATION_TIME               1500  // Time the code expects to rotate without a IMU yaw difference
 #define CHANGE_OBSTACLE_ROTATION    true  // if true, after 2 times moving forward due to an IMUyaw difference or OVERLOAD_ROTATION with escapeForward because of FREEWHEEL_IS_AT_BACKSIDE, escapeReverse with obstacle is triggered (prevent mower going forward if it can´t rotate and already tried to evade with escapeForward op) 
 #define OVERLOAD_ROTATION           true  // is usefull if there is alot of grip of wheels which leads to a high current and can result in a motor error overcurrent, before that happens... we want an evasion of the situation. If FREEWHEEL_IS_AT_BACKSIDE is true mower will drive forward on MOTOROVERLOAD if mower state is shouldrotate... otherwise it will trigger an Obstacle and escapeReverse (front snout of mower is hitting something during rotation) 
+#define MOWER_RADIUS_FRONT          0.35  // (m)
+#define MOWER_RADIUS_SIDES          0.25
+#define MOWER_RADIUS_BACK           0.45
 //#define OVERLOAD_ROTATION_AMPS      0.4 // if one motor consumes more than _AMPS and robot is rotating, an obstacle is assumed
 #define OVERLOAD_ROTATION_DEADTIME  1000  // (ms) trigger dead time for OVERLOAD_ROTATION (similar like BUMPER_DEADTIME)
 #define OBSTACLE_CHAINING           true  // if true, obstacle and obstaclerotation detection is allowed during an obstacle evasion operation (chaining) 
-//try to fix 8308 driver with pwm (keep FALSE if you have no issues or no DRV8308, this is for experiments only) ---> to be removed
+//DRIVER (try to fix 8308 driver with pwm (keep FALSE if you have no issues or no DRV8308, this is for experiments only)) ---> to be removed
 #define DRV8308_FIX                 false // only for testing, if true and charger is connected, drivers pwm will be 1 for DRVFIXITERATIONS iteration of code everytime DRVFIXTIMER is met
 #define DRVFIXITERATIONS            5     // iterations of code for pwm of drivers to be PWM_GEAR and PWM_MOW (below)
 #define DRVFIXTIMER                 60000 // (ms) timer for DRV8308_FIX, everytime timer is met, function will run once for DRVFIXITERATIONS and set pwm of drivers to 1
 #define PWM_GEAR                    1     // PWM for DRVFIX efforts..
 #define PWM_MOW                     1     // PWM for DRVFIX efforts..
-//try to fix 8308 driver with moving, only works reliable with "DOCK_RETRY_TOUCH = true"! tested and seems to be a valid workaround for the DRV8308 related dock stuck issue (keep FALSE if you have no issues or no DRV8308)
+//DRIVER (try to fix 8308 driver with moving, only works reliable with "DOCK_RETRY_TOUCH = true"! tested and seems to be a valid workaround for the DRV8308 related dock stuck issue (keep FALSE if you have no issues or no DRV8308))
 #define MOVE_REGULARLY              true  // if true, mower will move in dock in given MOVE_AGAIN_AFTER time, kk: move mower to keep 8308 alive
-#define MOVE_AGAIN_AFTER            10.0  // kk: move the mower every xx minutes
-#define MOVING_TIME                 400   // kk: time (ms) for moving back
+#define MOVE_AGAIN_AFTER            9.0  // move the mower every xx minutes
+#define MOVING_TIME                 400   // time (ms) for moving back
 #define SWITCH_OFF_TRACTION_MOTORS  true  // should tractionmotors be disabled in dock?
 //LOG
 #define OUTPUT_ENABLED              false // output standard Sunray_FW LOG in serial monitor and SDlog
@@ -425,7 +432,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 // https://wiki.ardumower.de/index.php?title=Free_wheel_sensor
 #define BUMPER_ENABLE true
 //#define BUMPER_ENABLE false
-#define BUMPER_DEADTIME 1000  // bumper dead-time (ms), when bumper has triggered it can not trigger again for BUMPER_DEADTIME --> give mower time to react to a bumper trigger and release the bumper
+#define BUMPER_DEADTIME 500  // bumper dead-time (ms), when bumper has triggered it can not trigger again for BUMPER_DEADTIME --> give mower time to react to a bumper trigger and release the bumper
 #define BUMPER_TRIGGER_DELAY  50 // bumper must be active for (ms) to trigger (do only use if you have a weak bumper(springs)), Bumper has already a code iteration delay of some milliseconds
 #define BUMPER_MAX_TRIGGER_TIME 20  // if bumpersensor stays permanently triggered mower will stop with bumper error (time in seconds; 0 = disabled)
 

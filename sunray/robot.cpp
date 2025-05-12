@@ -706,6 +706,7 @@ void start(){
 // should robot wait?
 bool robotShouldWait(){
   //motor.waitMowMotor();
+  //if (motor.motorMowRpmCheck)
 
   if (motor.waitMowMotor()) {
     //motor.waitSpinUp = false;
@@ -770,7 +771,8 @@ bool robotShouldBeInMotion(){
   return stateInMotionLP;
 }
 
-void triggerWaitCommand(){
+void triggerWaitCommand(unsigned int waitTime){
+  waitOp.waitTime = waitTime;
   activeOp->onWaitCommand();
 }
 
@@ -812,8 +814,8 @@ void triggerObstacleRotation(){
     // finish
   //  activeOp->onNoFurtherWaypoints();
   //}
-  if (robotShouldRotateLeft()) maps.setObstaclePosition(stateX, stateY, -135.0, ESCAPE_FORWARD_WAY, OBSTACLE_DIAMETER);
-  if (robotShouldRotateRight()) maps.setObstaclePosition(stateX, stateY, 135.0, ESCAPE_FORWARD_WAY, OBSTACLE_DIAMETER);
+  if (robotShouldRotateLeft()) maps.setObstaclePosition(stateX, stateY, -135.0, MOWER_RADIUS_BACK, OBSTACLE_DIAMETER);
+  if (robotShouldRotateRight()) maps.setObstaclePosition(stateX, stateY, 135.0, MOWER_RADIUS_BACK, OBSTACLE_DIAMETER);
   resetStateEstimation();
   resetLinearMotionMeasurement();
   resetAngularMotionMeasurement();
@@ -823,7 +825,7 @@ void triggerObstacleRotation(){
 
 void detectLawn(){ //MrTree
   static unsigned long motorMowStallTime = 0;
-  if (!motor.switchedOn || motor.waitSpinUp) return;
+  if (!motor.switchedOn || motor.waitMowMotor()) return;
   if (ESCAPE_LAWN){ //MrTree option for triggering escapelawn with actual measured rpm stall
     if ((millis() > (escapeLawnTriggerTime + ESCAPELAWN_DEADTIME)) && motor.motorMowStallFlag){
       escapeLawnTriggerTime = millis();                                                                    
@@ -907,7 +909,7 @@ bool detectObstacle(){
           if (avg < TOF_OBSTACLE_CM * 10){
             CONSOLE.println("ToF obstacle!");    
             statMowToFCounter++;
-            maps.setObstaclePosition(stateX, stateY, 0, 0.10, OBSTACLE_DIAMETER);
+            maps.setObstaclePosition(stateX, stateY, 0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);
             triggerObstacle();                
             return true; 
           }
@@ -938,10 +940,10 @@ bool detectObstacle(){
     //resetStateEstimation();
     if (bumper.obstacleLeft()){
       CONSOLE.println("BUMPER: bumper left obstacle!");  
-      maps.setObstaclePosition(stateX, stateY, 35.0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);  
+      maps.setObstaclePosition(stateX, stateY, 35.0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);  
     } else {
       CONSOLE.println("BUMPER: bumper right obstacle!");
-      maps.setObstaclePosition(stateX, stateY, -35.0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);
+      maps.setObstaclePosition(stateX, stateY, -35.0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);
     }
     maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);  
     triggerObstacle();    
@@ -953,7 +955,7 @@ bool detectObstacle(){
     if (SONAR_TRIGGER_OBSTACLES){
       CONSOLE.println("SONAR_TRIGGER_OBSTACLES: sonar obstacle!");            
       statMowSonarCounter++;
-      maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);
+      maps.setObstaclePosition(stateX, stateY, 0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);
       triggerObstacle();
       return true;
     }        
@@ -970,7 +972,7 @@ bool detectObstacle(){
         //resetLinearMotionMeasurement();
         //resetAngularMotionMeasurement();
         //resetStateEstimation();
-        maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);
+        maps.setObstaclePosition(stateX, stateY, 0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);
         triggerObstacle();
         return true;
       }
@@ -993,7 +995,7 @@ bool detectObstacle(){
           //resetLinearMotionMeasurement();
           //resetAngularMotionMeasurement();
           //resetStateEstimation();
-          maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);
+          maps.setObstaclePosition(stateX, stateY, 0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);
           triggerObstacle();
           return true;
         
@@ -1020,7 +1022,7 @@ bool detectObstacle(){
       //resetStateEstimation();
       //resetAngularMotionMeasurement();
       //resetLinearMotionMeasurement();
-      maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER); //need to add sides            
+      maps.setObstaclePosition(stateX, stateY, 0, MOWER_RADIUS_BACK, OBSTACLE_DIAMETER); //need to add sides            
       triggerObstacle();
       return true;            
     }
@@ -1036,7 +1038,7 @@ bool detectObstacle(){
       //resetStateEstimation();
       //resetLinearMotionMeasurement();
       //resetAngularMotionMeasurement();
-      maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);        
+      maps.setObstaclePosition(stateX, stateY, 0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);        
       triggerObstacle();
       return true;           
     }
@@ -1063,7 +1065,7 @@ bool detectObstacleRotation(){
       //resetStateEstimation();
       //resetLinearMotionMeasurement();
       //resetAngularMotionMeasurement();
-      maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);     
+      maps.setObstaclePosition(stateX, stateY, 0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);     
       triggerObstacle(); //MrTree changed to trigger freewheel dependent        
     }
     return true;
@@ -1085,7 +1087,7 @@ bool detectObstacleRotation(){
         //resetStateEstimation();
         //resetLinearMotionMeasurement();
         //resetAngularMotionMeasurement();
-        maps.setObstaclePosition(stateX, stateY, 0, ESCAPE_REVERSE_WAY, OBSTACLE_DIAMETER);    
+        maps.setObstaclePosition(stateX, stateY, 0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);    
         triggerObstacle();
         return true;
       }

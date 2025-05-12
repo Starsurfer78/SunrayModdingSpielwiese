@@ -21,7 +21,7 @@ void ErrorOp::begin(){
     //  op = stateOp;
     //} else {        
     motor.stopImmediately(true); // do not use PID to get to stop
-    //motor.setLinearAngularSpeed(0,0);
+    motor.setLinearAngularSpeed(0,0);
     motor.setMowState(false);      
     //}  
     buzzer.sound(SND_ERROR, true);
@@ -32,6 +32,7 @@ void ErrorOp::end(){
 }
 
 void ErrorOp::run(){
+    if (!buzzer.isPlaying()) buzzer.sound(SND_SOS, true);
     if (battery.chargerConnected()){        
         changeOp(chargeOp);
     }    
