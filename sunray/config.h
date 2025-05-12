@@ -109,10 +109,10 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define DISTANCE_RAMP               true  // is using NEARWAYPOINTDISTANCE, MOTOR_MIN_SPEED and the actual setspeed to calculate an indirect deceleration ramp to the next waypoint, if this is true, NEARWAYPOINTSPEED in linetracker.cpp is disabled
 #define DISTANCE_RAMP_MINSPEED      0.15  // (m/s) this is the ramp minspeed
 #define ROTATION_RAMP               true  // uses a ramp for angletotargetfits
-#define ROTATION_RAMP_MAX           100    // (deg/s) maximum rotation speed
+#define ROTATION_RAMP_MAX           100   // (deg/s) maximum rotation speed
 #define ROTATION_RAMP_MIN           18    // (deg/s) minimum rotation speed
 //rotation speeds, also this is easy to tune for your expectations --> going to be changed to angularRamp() with less parameters
-//#define DOCKANGULARSPEED            35.0  // (deg/s) the turning rate of mower when docking (no change needed, keep low; tune at your needs if you must)
+//#define DOCKANGULARSPEED            35.0  // (deg/s) the turning rate of mower when docking (no change needed, keep low; tune at your needs if you must) <-- to be removed
 #define ROTATETOTARGETSPEED1        65.0  // (deg/s) if angle difference to point is more than ANGLEDIFF1 then this value will be used...   warning, a high value will result in extreme gearmotor stress (test at own risk, 65deg/s is still safe and fast)
 #define ROTATETOTARGETSPEED2        40.0  // (deg/s) if angle difference to point is between ANGLEDIFF1 and ANGLEDIFF2 then this value will be used...
 #define ROTATETOTARGETSPEED3        25.0  // (deg/s) if angle difference to point is less than ANGLEDIFF2 then this value will be used...
@@ -173,7 +173,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define DOCK_GPS_REBOOT             true  // if false and DOCK_POINT_GPS_REBOOT is not 0, mower will wait at the DOCK_POINT_GPS_REBOOT point for fix without rebooting GPS, if false and DOCK_POINT_GPS_REBOOT = 0 this function is off (hopefully)
 #define DOCK_GPS_REBOOT_TIME        45000 // (ms) time to wait after rebooting gps for response from ublox? 
 //#define GPS_STABLETIME              30000 // (ms) GPS Time with fix solution, before continueing from DOCK_POINT_GPS_REBOOT after undock  
-#define DOCK_POINT_GPS_REBOOT       3     // dockpath point where GPS will be rebootet when undocking/docking/retrydocking
+#define DOCK_POINT_GPS_REBOOT       3     // dockpath point where GPS will be rebootet when undocking/docking/retrydocking <-- not implemented yet
 #define DOCK_SLOW_ONLY_LAST_POINTS  3     // trackslow speed will bes used on last dockingpoint and hitting the charger
 #define DOCK_REVERSE_POINT          3     // mower will track reverse if freewheel is at backside (Ardumower) or forward (Landrumower) until at that point
 //DOCK options keep mower from rotating in dock by all means, needs situation dependent tuning, so be aware!
@@ -186,24 +186,25 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define SOLUTION_TIMEOUT            5000  // (ms) communication timeout with ublox, original it is set to 1000 ms ... long cycle times of code like pathfinder will lead to an invalid solution
 #define GPS_RESET_WAIT_FIX          true  // reset GPS if mower is in a float timeout for GPS_RESET_WAIT_FIX_TIME?
 #define GPS_RESET_WAIT_FIX_TIME     5     // (min) time in minutes to reset gps if mower is in a float timeout without getting fix within GPS_RESET_WAIT_FIX_TIME 
-#define NO_GPS_SIGNAL_TIMEOUT       20000 //
-#define GPS_JUMP_WAIT               true  //
-#define GPS_JUMP_WAIT_TIME          30000 //
+#define NO_GPS_SIGNAL_TIMEOUT       20000 // (ms) mower is allowed to run in an GPS invalid state for given time.... 
+#define GPS_JUMP_WAIT               true  // if a GPS jump is detected, should the mower wait?
+#define GPS_JUMP_WAIT_TIME          30000 // (ms) waittime if there was a GPS jump
+//#define GPS_JUMP_DISTANCE         0.4   // (m) the sudden difference from last GPS position to new position, that will trigger a GPS jump positive <-- to be added 
 //OTHER
-#define FLOAT_CALC                  1
+#define FLOAT_CALC                  1     // better float handling?
 #define MOW_START_AT_WAYMOW         true  // mowmotor only starts if way state of mower is waymow for the first time, used for mowmotor not starting directly at dock, but at mow area. This is a onetime trigger that only works when mower is (---> undocking ) ---> wayfree ---> mowarea ---> start mowmotor. After this, mowmotor will behave like it used to be
 #define WATCHDOG_CONTINUE           false // set true if you have watchdog reset issues, mower will start mowing after rebooting
 #define WATCHDOG_TIME               16000 // (ms) resettimer for watchdog trigger
 //OBSTACLES
 #define OBSTACLE_DETECTION_ROTATION true  // detect robot rotation stuck (requires IMU) (wheel at backside, popo situation)
-#define ROTATION_TIMEOUT            5000  // Timeout of rotation movement that triggers an obstacle with escapeReverse
-#define ROTATION_TIME               1500  // Time the code expects to rotate without a IMU yaw difference
+#define ROTATION_TIMEOUT            5000  // Timeout of rotation movement that triggers an obstacle with escapeReverse (goal for shorter trigger times)
+#define ROTATION_TIME               1500  // Time the code expects to rotate without a high IMU yaw difference (yaw difference configuration to be added)
 #define CHANGE_OBSTACLE_ROTATION    true  // if true, after 2 times moving forward due to an IMUyaw difference or OVERLOAD_ROTATION with escapeForward because of FREEWHEEL_IS_AT_BACKSIDE, escapeReverse with obstacle is triggered (prevent mower going forward if it can´t rotate and already tried to evade with escapeForward op) 
 #define OVERLOAD_ROTATION           true  // is usefull if there is alot of grip of wheels which leads to a high current and can result in a motor error overcurrent, before that happens... we want an evasion of the situation. If FREEWHEEL_IS_AT_BACKSIDE is true mower will drive forward on MOTOROVERLOAD if mower state is shouldrotate... otherwise it will trigger an Obstacle and escapeReverse (front snout of mower is hitting something during rotation) 
-#define MOWER_RADIUS_FRONT          0.35  // (m)
-#define MOWER_RADIUS_SIDES          0.25
-#define MOWER_RADIUS_BACK           0.45
-//#define OVERLOAD_ROTATION_AMPS      0.4 // if one motor consumes more than _AMPS and robot is rotating, an obstacle is assumed
+#define MOWER_RADIUS_FRONT          0.35  // (m) setObstaclePosition relevant (measure chassis from gps antenna and add 5cm´s)
+#define MOWER_RADIUS_SIDES          0.25  // (m) setObstaclePosition relevant (measure chassis from gps antenna and add 5cm´s)
+#define MOWER_RADIUS_BACK           0.45  // (m) setObstaclePosition relevant (measure chassis from gps antenna and add 5cm´s)
+//#define OVERLOAD_ROTATION_AMPS      0.4 // if one motor consumes more than _AMPS and robot is rotating, an obstacle is assumed <-- to be revived
 #define OVERLOAD_ROTATION_DEADTIME  1000  // (ms) trigger dead time for OVERLOAD_ROTATION (similar like BUMPER_DEADTIME)
 #define OBSTACLE_CHAINING           true  // if true, obstacle and obstaclerotation detection is allowed during an obstacle evasion operation (chaining) 
 //DRIVER (try to fix 8308 driver with pwm (keep FALSE if you have no issues or no DRV8308, this is for experiments only)) ---> to be removed
