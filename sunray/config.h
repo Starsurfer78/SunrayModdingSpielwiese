@@ -108,11 +108,11 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define MOTOR_MIN_SPEED             0.05  // (m/s) minimal mower speed --> has not much to to with configuration of speeds: acts as a failsafe
 #define DISTANCE_RAMP               true  // is using NEARWAYPOINTDISTANCE, MOTOR_MIN_SPEED and the actual setspeed to calculate an indirect deceleration ramp to the next waypoint, if this is true, NEARWAYPOINTSPEED in linetracker.cpp is disabled
 #define DISTANCE_RAMP_MINSPEED      0.15  // (m/s) this is the ramp minspeed
-#define ROTATION_RAMP               true  // uses a ramp for angletotargetfits
-#define ROTATION_RAMP_MAX           100   // (deg/s) maximum rotation speed
-#define ROTATION_RAMP_MIN           18    // (deg/s) minimum rotation speed
 //rotation speeds, also this is easy to tune for your expectations --> going to be changed to angularRamp() with less parameters
 //#define DOCKANGULARSPEED            35.0  // (deg/s) the turning rate of mower when docking (no change needed, keep low; tune at your needs if you must) <-- to be removed
+#define ROTATION_RAMP               true  // uses a ramp for angletotargetfits (very nice), ROTATETOTARGETSPEED´s are disabled if this is true
+#define ROTATION_RAMP_MAX           100   // (deg/s) maximum rotation speed
+#define ROTATION_RAMP_MIN           18    // (deg/s) minimum rotation speed
 #define ROTATETOTARGETSPEED1        65.0  // (deg/s) if angle difference to point is more than ANGLEDIFF1 then this value will be used...   warning, a high value will result in extreme gearmotor stress (test at own risk, 65deg/s is still safe and fast)
 #define ROTATETOTARGETSPEED2        40.0  // (deg/s) if angle difference to point is between ANGLEDIFF1 and ANGLEDIFF2 then this value will be used...
 #define ROTATETOTARGETSPEED3        25.0  // (deg/s) if angle difference to point is less than ANGLEDIFF2 then this value will be used...
