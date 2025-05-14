@@ -167,7 +167,7 @@ extern BLEConfig bleConfig;
 extern Bumper bumper;
 extern Buzzer buzzer;
 extern Sonar sonar;
-extern VL53L0X tof;
+extern VL53L0X tof; //remove me
 extern PinManager pinMan;
 extern Map maps;
 extern TimeTable timetable;
@@ -197,6 +197,7 @@ void detectLawn(); //MrTree
 bool detectLift();
 bool detectObstacle();
 bool detectObstacleRotation();
+void resetMotion(); //MrTree helper function that calls multiple reset functions
 void resetStateEstimation();
 void resetLinearMotionMeasurement(); //Svol0
 void resetAngularMotionMeasurement(); //MrTree

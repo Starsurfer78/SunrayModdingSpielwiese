@@ -18,9 +18,13 @@
 // Conversion from uS to distance (round result to nearest cm or inch).
 #define NewPingConvert(echoTime, conversionFactor) (max(((unsigned int)echoTime + conversionFactor / 2) / conversionFactor, (echoTime ? 1 : 0)))
 
-RunningMedian<unsigned int, 9> sonarLeftMeasurements;
-RunningMedian<unsigned int, 9> sonarRightMeasurements;
-RunningMedian<unsigned int, 9> sonarCenterMeasurements;
+//RunningMedian<unsigned int, 9> sonarLeftMeasurements;
+//RunningMedian<unsigned int, 9> sonarRightMeasurements;
+//RunningMedian<unsigned int, 9> sonarCenterMeasurements;
+
+RunningMedian sonarLeftMeasurements = RunningMedian(9);
+RunningMedian sonarRightMeasurements = RunningMedian(9);
+RunningMedian sonarCenterMeasurements = RunningMedian(9);
 
 volatile unsigned long startTime = 0;
 volatile unsigned long echoTime = 0;
@@ -119,18 +123,21 @@ void Sonar::run() {
     nextEvalTime = millis() + 50; //SONAR CHANGE EVAL
     float value;
     //sonarLeftMeasurements.getLowest(distanceLeft);
-    sonarLeftMeasurements.getMedian(distanceLeft);
+    //sonarLeftMeasurements.getMedian(distanceLeft);
+    distanceLeft = sonarLeftMeasurements.getMedian();
     //sonar1Measurements.getAverage(avg);
     distanceLeft = convertCm(distanceLeft);
     //CONSOLE.print("DistanceLeft: =");
     //CONSOLE.println(distanceLeft);
     //sonarRightMeasurements.getLowest(distanceRight);
-    sonarRightMeasurements.getMedian(distanceRight);
+    //sonarRightMeasurements.getMedian(distanceRight);
+    distanceRight = sonarRightMeasurements.getMedian();
     distanceRight = convertCm(distanceRight);
     //CONSOLE.print("DistanceRight: =");
     //CONSOLE.println(distanceRight);
     //sonarCenterMeasurements.getLowest(distanceCenter);
-    sonarCenterMeasurements.getMedian(distanceCenter);
+    //sonarCenterMeasurements.getMedian(distanceCenter);
+    distanceCenter = sonarCenterMeasurements.getMedian();
     distanceCenter = convertCm(distanceCenter);
     //CONSOLE.print("DistanceCenter: =");
     //CONSOLE.println(distanceCenter);

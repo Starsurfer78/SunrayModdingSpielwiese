@@ -1,136 +1,113 @@
-// running median filter   
-//
-// usage:
-//   RunningMedian<unsigned int,32> myMedian;
-//   if (myMedian.getStatus() == myMedian.OK)  myMedian.getMedian(_median);
-
-
-#ifndef RunningMedian_h
-#define RunningMedian_h
+#pragma once
 //
 //    FILE: RunningMedian.h
-//  AUTHOR: Rob dot Tillaart at gmail dot com
+//  AUTHOR: Rob Tillaart
 // PURPOSE: RunningMedian library for Arduino
-// VERSION: 0.2.00 - template edition
+// VERSION: 0.3.9
+//     URL: https://github.com/RobTillaart/RunningMedian
 //     URL: http://arduino.cc/playground/Main/RunningMedian
-// HISTORY: 0.2.00 first template version by Ronny
-//          0.2.01 added getAverage(uint8_t nMedians, float val)
-//
-// Released to the public domain
-//
+// HISTORY: See RunningMedian.cpp
 
-#include <inttypes.h>
 
-template <typename T, int N> class RunningMedian {
+#include "Arduino.h"
 
+#define RUNNING_MEDIAN_VERSION        (F("0.3.9"))
+
+
+//  fall back to fixed storage for dynamic version => remove true
+#ifndef RUNNING_MEDIAN_USE_MALLOC
+#define RUNNING_MEDIAN_USE_MALLOC     true
+#endif
+
+
+//  MEDIAN_MIN_SIZE  should at least be 3 to be practical,
+#ifndef MEDIAN_MIN_SIZE
+#define MEDIAN_MIN_SIZE               3
+#endif
+
+
+#ifndef MEDIAN_MAX_SIZE
+#ifdef RUNNING_MEDIAN_USE_MALLOC
+//  max 250 to not overflow uint8_t internal variables
+#define MEDIAN_MAX_SIZE               255
+#else
+//  using fixed memory will be limited to 19 elements.
+#define MEDIAN_MAX_SIZE               19
+#endif
+#endif
+
+
+class RunningMedian
+{
 public:
+  //  # elements in the internal buffer
+  //  odd sizes results in a 'real' middle element and will be a bit faster.
+  //  even sizes takes the average of the two middle elements as median
+  explicit RunningMedian(const uint8_t size);
+  ~RunningMedian();
 
-    enum STATUS {OK = 0, NOK = 1};
+  //  resets internal buffer and variables
+  void    clear();
+  //  adds a new value to internal buffer, optionally replacing the oldest element.
+  void    add(const float value);
+  //  returns the median == middle element
+  float   getMedian();
 
-    RunningMedian() {
-        _size = N;
-        clear();
-    };
+  //  returns the Quantile
+  float   getQuantile(const float quantile);
 
-    void clear() {
-        _cnt = 0;
-        _idx = 0;
-    };
+  //  returns average of the values in the internal buffer
+  float   getAverage();
+  //  returns average of the middle nMedian values, removes noise from outliers
+  float   getAverage(uint8_t nMedian);
+  //  returns average of the middle nMedian values, removes noise from outliers
+  //  Bias compensated see #22.
+  float   getMedianAverage(uint8_t nMedian);
 
-    void add(T value) {
-        _ar[_idx++] = value;
-        if (_idx >= _size) _idx = 0; // wrap around
-        if (_cnt < _size) _cnt++;
-    };
+  float   getHighest() { return getSortedElement(_count - 1); };
+  float   getLowest()  { return getSortedElement(0); };
 
-    STATUS getMedian(T& value) {
-        if (_cnt > 0) {
-            sort();
-            value = _as[_cnt/2];
-            return OK;
-        }
-        return NOK;
-    };
+  //  get n-th element from the values in time order
+  float   getElement(const uint8_t n);
+  //  get n-th element from the values in size order
+  float   getSortedElement(const uint8_t n);
+  //  predict the max change of median after n additions
+  float   predict(const uint8_t n);
 
-    STATUS getAverage(float &value) {
-        if (_cnt > 0) {
-            float sum = 0;
-            for (uint8_t i=0; i< _cnt; i++) sum += _ar[i];
-            value = sum / _cnt;
-            return OK;
-        }
-        return NOK;
-    };
+  uint8_t getSize()    { return _size; };
+  //  returns current used elements, getCount() <= getSize()
+  uint8_t getCount()   { return _count; };
+  bool    isFull()     { return (_count == _size); }
 
-    STATUS getAverage(uint8_t nMedians, float &value) {
-        if ((_cnt > 0) && (nMedians > 0))
-        {
-            if (_cnt < nMedians) nMedians = _cnt;     // when filling the array for first time
-            uint8_t start = ((_cnt - nMedians)/2);
-            uint8_t stop = start + nMedians;
-            sort();
-            float sum = 0;
-            for (uint8_t i = start; i < stop; i++) sum += _as[i];
-            value = sum / nMedians;
-            return OK;
-        }
-        return NOK;
-    }
 
-    STATUS getHighest(T& value) {
-        if (_cnt > 0) {
-            sort();
-            value = _as[_cnt-1];
-            return OK;
-        }
-        return NOK;
-    };
+  //  EXPERIMENTAL  (might change in the future)
+  //  searchMode defines how the internal insertionSort works
+  //  can be used to optimize performance.
+  //  0 = LINEAR_SEARCH   1 = BINARY_SEARCH
+  void    setSearchMode(uint8_t searchMode = 0);
+  uint8_t getSearchMode();
 
-    STATUS getLowest(T& value) {
-        if (_cnt > 0) {
-            sort();
-            value =  _as[0];
-            return OK;
-        }
-        return NOK;
-    };
 
-    unsigned getSize() {
-        return _size;
-    };
+protected:
+  boolean   _sorted;    //  _sortIdx{} is up to date
+  uint8_t   _size;      //  max number of values
+  uint8_t   _count;     //  current number of values <= size
+  uint8_t   _index;     //  next index to add
 
-    unsigned getCount() {
-        return _cnt;
-    }
 
-    STATUS getStatus() {
-        return (_cnt > 0 ? OK : NOK);
-    };
-
-private:
-    uint8_t _size;
-    uint8_t _cnt;
-    uint8_t _idx;
-    T _ar[N];
-    T _as[N];
-    void sort() {
-        // copy
-        for (uint8_t i=0; i< _cnt; i++) _as[i] = _ar[i];
-
-        // sort all
-        for (uint8_t i=0; i< _cnt-1; i++) {
-            uint8_t m = i;
-            for (uint8_t j=i+1; j< _cnt; j++) {
-                if (_as[j] < _as[m]) m = j;
-            }
-            if (m != i) {
-                T t = _as[m];
-                _as[m] = _as[i];
-                _as[i] = t;
-            }
-        }
-    };
+  //  _values holds the elements themself
+  //  _sortIdx holds the index for sorted
+#if RUNNING_MEDIAN_USE_MALLOC
+  float *   _values;
+  uint8_t * _sortIdx;
+#else
+  float   _values[MEDIAN_MAX_SIZE];
+  uint8_t _sortIdx[MEDIAN_MAX_SIZE];
+#endif
+  void      sort();
+  uint8_t   _searchMode = 0;
 };
 
-#endif
+
+//  -- END OF FILE --
 

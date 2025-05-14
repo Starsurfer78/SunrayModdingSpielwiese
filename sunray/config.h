@@ -420,13 +420,6 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define RAIN_ENABLE true                 // if activated, mower will dock when rain sensor triggers
 //#define RAIN_ENABLE false
 
-// ------ time-of-flight distance sensor (VL53L0X) -----------------------------
-// do not use this sensor (not recommended)
-//#define TOF_ENABLE true
-#define TOF_ENABLE false
-#define TOF_OBSTACLE_CM 100      // stop mowing operation below this distance (cm) 
-
-
 // ------ bumper sensor (bumperduino, freewheel etc.) ----------------
 // see Wiki on how to install bumperduino or freewheel sensor:
 // https://wiki.ardumower.de/index.php?title=Bumper_sensor

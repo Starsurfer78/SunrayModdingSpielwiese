@@ -10,12 +10,14 @@
 #include "rcmodel.h"
 #include "robot.h"
 #include "motor.h"
-#include <RunningMedian.h>
+#include "RunningMedian.h"
 
-RunningMedian<unsigned int, 5> CHAN_1_med;
-RunningMedian<unsigned int, 5> CHAN_2_med;
-RunningMedian<unsigned int, 5> CHAN_3_med;
-
+//RunningMedian<unsigned int, 5> CHAN_1_med;
+//RunningMedian<unsigned int, 5> CHAN_2_med;
+//RunningMedian<unsigned int, 5> CHAN_3_med;
+RunningMedian CHAN_1_med = RunningMedian(5);
+RunningMedian CHAN_2_med = RunningMedian(5);
+RunningMedian CHAN_3_med = RunningMedian(5);
 bool bMow = false;
 
 float CHAN_1x;            //Channel 1 RC --- float for SetLinearAngular function (linear)
@@ -113,7 +115,8 @@ void RCModel::run()
     if (lin_PWM < 2001 && lin_PWM > 999)                                        // Wert innerhalb 1100 bis 1900µsec
     { 
       CHAN_1_med.add(lin_PWM);
-      CHAN_1_med.getMedian(lin_PWM);
+      //CHAN_1_med.getMedian(lin_PWM);
+      lin_PWM = CHAN_1_med.getMedian();
       CHAN_1x = map(lin_PWM, 1000, 2000, -600, 600);
       CHAN_1x /= 1000.0;
       if ((CHAN_1x < 0.02) && (CHAN_1x > -0.02)) CHAN_1x = 0;                   // NullLage vergrössern
@@ -125,7 +128,8 @@ void RCModel::run()
     if (ang_PWM < 2001 && ang_PWM > 999)                                        // Wert innerhalb 1100 bis 1900µsec
     {
       CHAN_2_med.add(ang_PWM);
-      CHAN_2_med.getMedian(ang_PWM);   
+      //CHAN_2_med.getMedian(ang_PWM);
+      ang_PWM = CHAN_2_med.getMedian();   
       CHAN_2x = map(ang_PWM, 1000, 2000, -PI*1000, PI*1000);
       CHAN_2x /= 1000.0;
       if ((CHAN_2x < 0.01) && (CHAN_2x > -0.01)) CHAN_2x = 0;                   // NullLage vergrössern         
@@ -137,7 +141,8 @@ void RCModel::run()
     if (mow_PWM < 2101 && mow_PWM > 899)                                      // Wert innerhalb 1100 bis 1900µsec
     { 
       CHAN_3_med.add(mow_PWM);
-      CHAN_3_med.getMedian(mow_PWM);
+      //CHAN_3_med.getMedian(mow_PWM);
+      mow_PWM = CHAN_3_med.getMedian();
       CHAN_3 = (mow_PWM - 1500) / 2;                                          // halbieren... -255 | +255
       if (CHAN_3 > 50 || CHAN_3 < -50) bMow = true;
         else bMow = false;    

@@ -122,7 +122,7 @@ BLEConfig bleConfig;
 Buzzer buzzer;
 Sonar sonar;
 Bumper bumper;
-VL53L0X tof(VL53L0X_ADDRESS_DEFAULT);
+VL53L0X tof(VL53L0X_ADDRESS_DEFAULT); //remove me
 Map maps;
 RCModel rcmodel;
 TimeTable timetable;
@@ -209,11 +209,18 @@ PubSubClient mqttClient(espClient);
 int motorErrorCounter = 0;
 int motorMowStallCounter = 0; //MrTree
 
-RunningMedian<unsigned int,3> tofMeasurements;
-
+//RunningMedian<unsigned int,3> tofMeasurements;
+//RunningMedian tofMeasurements = RunningMedian(3);
 
 // must be defined to override default behavior
 void watchdogSetup (void){} 
+
+void resetMotion(){
+  resetLinearMotionMeasurement();
+  resetAngularMotionMeasurement();
+  resetOverallMotionTimeout();
+  resetStateEstimation();
+}
 
 void resetStateEstimation(){
   //stateDelta
@@ -271,14 +278,7 @@ void sensorTest(){
         CONSOLE.print(((int)sonar.obstacle()));
         CONSOLE.print("\t");
       }
-      if (TOF_ENABLE){   
-        CONSOLE.print("ToF (dist): ");
-        int v = tof.readRangeContinuousMillimeters();        
-        if (!tof.timeoutOccurred()) {     
-          CONSOLE.print(v/10);
-        }
-        CONSOLE.print("\t");
-      }    
+   
       if (BUMPER_ENABLE){
         CONSOLE.print("bumper (left,right,triggered): ");
         CONSOLE.print(((int)bumper.testLeft()));
@@ -649,15 +649,7 @@ void start(){
 
   outputConfig();
 
-  if (TOF_ENABLE){
-    tof.setTimeout(500);
-    if (!tof.init())
-    {
-      CONSOLE.println("Failed to detect and initialize tof sensor");
-      delay(1000);
-    }
-    tof.startContinuous(100);
-  }        
+        
   
   CONSOLE.print("SERIAL_BUFFER_SIZE=");
   CONSOLE.print(SERIAL_BUFFER_SIZE);
@@ -777,33 +769,38 @@ void triggerWaitCommand(unsigned int waitTime){
 }
 
 void triggerMotorMowWait(){
-  resetStateEstimation();
-  resetLinearMotionMeasurement();
-  resetAngularMotionMeasurement();
+  resetMotion();
+  //resetStateEstimation();
+  //resetLinearMotionMeasurement();
+  //resetAngularMotionMeasurement();
+  //resetOverallMotionTimeout();
   activeOp->onMotorMowStart();
 }
 
 // drive reverse on high lawn and retry
 void triggerMotorMowStall(){
-  resetStateEstimation();
-  resetLinearMotionMeasurement();
-  resetAngularMotionMeasurement();
+  resetMotion();
+  //resetStateEstimation();
+  //resetLinearMotionMeasurement();
+  //resetAngularMotionMeasurement();
   activeOp->onMotorMowStall(); 
 }
 
 // trigger gps jump action
 void triggerGpsJump(){
-  resetStateEstimation();
-  resetLinearMotionMeasurement();
-  resetAngularMotionMeasurement();
+  resetMotion();
+  //resetStateEstimation();
+  //resetLinearMotionMeasurement();
+  //resetAngularMotionMeasurement();
   activeOp->onGpsJump();
 }
 
 // drive reverse if robot cannot move forward
 void triggerObstacle(){
-  resetStateEstimation();
-  resetLinearMotionMeasurement();
-  resetAngularMotionMeasurement();
+  resetMotion();
+  //resetStateEstimation();
+  //resetLinearMotionMeasurement();
+  //resetAngularMotionMeasurement();
   activeOp->onObstacle();
 }
 
@@ -816,9 +813,10 @@ void triggerObstacleRotation(){
   //}
   if (robotShouldRotateLeft()) maps.setObstaclePosition(stateX, stateY, -135.0, MOWER_RADIUS_BACK, OBSTACLE_DIAMETER);
   if (robotShouldRotateRight()) maps.setObstaclePosition(stateX, stateY, 135.0, MOWER_RADIUS_BACK, OBSTACLE_DIAMETER);
-  resetStateEstimation();
-  resetLinearMotionMeasurement();
-  resetAngularMotionMeasurement();
+  resetMotion();
+  //resetStateEstimation();
+  //resetLinearMotionMeasurement();
+  //resetAngularMotionMeasurement();
   
   activeOp->onObstacleRotation();
 }
@@ -894,29 +892,7 @@ bool detectObstacle(){
   static unsigned long lastBumperTime = 0;
   static unsigned long noGPSSpeedTime = 0;
 
-  if (!robotShouldMove()) return false;
-
-  // time of flight (obsolete)   
-  if (TOF_ENABLE){
-    if (millis() >= nextToFTime){
-      nextToFTime = millis() + 200;
-      int v = tof.readRangeContinuousMillimeters();        
-      if (!tof.timeoutOccurred()) {     
-        tofMeasurements.add(v);        
-        float avg = 0;
-        if (tofMeasurements.getAverage(avg) == tofMeasurements.OK){
-          //CONSOLE.println(avg);
-          if (avg < TOF_OBSTACLE_CM * 10){
-            CONSOLE.println("ToF obstacle!");    
-            statMowToFCounter++;
-            maps.setObstaclePosition(stateX, stateY, 0, MOWER_RADIUS_FRONT, OBSTACLE_DIAMETER);
-            triggerObstacle();                
-            return true; 
-          }
-        }      
-      } 
-    }    
-  }   
+  if (!robotShouldMove()) return false;   
   
   // lift
   #ifdef ENABLE_LIFT_DETECTION
