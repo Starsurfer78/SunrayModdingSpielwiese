@@ -47,7 +47,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
   CONSOLE.print(topic);
   CONSOLE.print("] ");
   String cmd = ""; 
-  for (int i = 0; i < length; i++) {
+  for (unsigned int i = 0; i < length; i++) {
     cmd += (char)payload[i];    
   }
   CONSOLE.println(cmd);

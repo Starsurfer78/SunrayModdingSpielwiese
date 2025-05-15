@@ -63,7 +63,7 @@ void PathFinderTest::runRandomPathTest(){
   Point dst;
   int numTests = 0;
   int numTestsFailed = 0; 
-  float d = 30.0;  
+  //float d = 30.0;  
   for (int i=0 ; i < 10000; i++){
     CONSOLE.print("PathFinderTest::runRandomPathTest loop ");
     CONSOLE.println(i);
