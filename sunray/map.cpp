@@ -985,7 +985,7 @@ bool Map::isAtGpsRebootPoint(){
   if (maps.isUndocking()){
     return (maps.dockPointsIdx == DOCK_POINT_GPS_REBOOT);  
   }
-  
+  return false;
 }
 
 bool Map::isAtDockPath(){
