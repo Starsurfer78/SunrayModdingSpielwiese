@@ -124,7 +124,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 //use a PID controller for mowmotor to set an RPM instead of PWM? If you use this (there will be a console output with data after 10sec when you activate the mowmotor and this is enabled)
 //CONFIG HINT: for the following options it is important if you have mow motor odometrie: USE_MOW_RPM_SET, ADAPTIVE_SPEED_MODE, ESCAPE_LAWN_MODE. If you do not have odometrie: use mode 1 on both cases and set USE_MOW_RPM_SET = false, if you have odometrie use mode 2 on both cases and set USE_MOW_RPM_SET = true (recommended)
 #define USE_MOW_RPM_SET             true  // uses RPM instead of PWM to set mowmotor (RPM_FAULT_DETECTION of orig Sunray is best to be set TRUE for all RPM based functions!!)
-#define MOWMOTOR_RPM_OFFSET         310   // compensate small RPM offsets (positive if RPM reading is less then RPM setpoint)
+#define MOWMOTOR_RPM_OFFSET         270   // compensate small RPM offsets (positive if RPM reading is less then RPM setpoint)
 #define MOWMOTOR_PID_KP             0.0032// (0.0024 Mowmotordriver DRV8308) (0.0018 JYQD) this is enough to compensate battery drainage over time and have a slow spinup, there may be a controlleroffset to rpm which has to be thought of... RPM_OFFSET
 #define MOWMOTOR_PID_KI             0.01  // (0.04 (Mowmotordriver DRV8308/JYQD))
 #define MOWMOTOR_PID_KD             0.00  // (0.0000 (Mowmotordriver DRV8308/JYQD))
@@ -134,10 +134,10 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define MOWPOWERMAX_AUTO            false // (expirimental) uses highest actual measured mowPower during operation, if true MOWPOWERMAX is ignored
 #define MOWPOWERMIN                 10.0  // (Watt) idle Power of Mowmotor or minimum load power of mowmotor, if under this load mower will have maximum speed
 #define MOWPOWERMAX                 35.0  // (Watt) max load power of mowmotor, when hitting this load mower will be at minspeed
-#define MOW_RPM_DEADZONE             150  // (rpm) rpm deadzone before speed will be reduced, so if MOW_RPM_NORMAL is 3000, mower will start to reduce speed if rpm is below 2700
+#define MOW_RPM_DEADZONE             250  // (rpm) rpm deadzone before speed will be reduced, so if MOW_RPM_NORMAL is 3000, mower will start to reduce speed if rpm is below 2700
 #define MOW_RPM_NORMAL              3200  // (3200)(rpm, only used if USE_MOW_RPM_SET = true) mow motor rpm for mowing (WARNING, you should check if your rpm output works as espected! if it does work, but the reading is wrong, you need to calculate the mowmotorticks per second according to realistic rpm!)
 #define MOW_RPM_SLOW                3400  // (3400)(rpm, only used if USE_MOW_RPM_SET = true) mow motor rpm when MOW_RPMtr_SLOW (%) of MOW_RPM_NORMAL (rpm) is met. Should be higher or the same as MOW_RPM_NORMAL
-#define MOW_RPM_RETRY               3700  // (3600)(rpm, only used if USE_MOW_RPM_SET = true) mow motor rpm when MOW_RPMtr_RETRY (%) of MOW_RPM_NORMAL (rpm) is met. Should be higher or the same as MOW_RPM_SLOW4 (is only used by ESCAPE_LAWN)
+#define MOW_RPM_RETRY               3600  // (3600)(rpm, only used if USE_MOW_RPM_SET = true) mow motor rpm when MOW_RPMtr_RETRY (%) of MOW_RPM_NORMAL (rpm) is met. Should be higher or the same as MOW_RPM_SLOW4 (is only used by ESCAPE_LAWN)
 #define MOW_PWM_NORMAL              185   // (pwm, only used if USE_MOW_RPM_SET = false) pwm of mow motor for normal mowing
 #define MOW_PWM_SLOW                205   // (pwm, only used if USE_MOW_RPM_SET = false) pwm of mow motor when during mowing a keepslow state is triggered. Should be higher or the same as MOW_PWM_NORMAL
 #define MOW_PWM_RETRY               235   // (pwm, only used if USE_MOW_RPM_SET = false) pwm of mow motor when during mowing a retryslow state is triggered (after escape lawn). Should be higher or the same as MOW_PWM_SLOW
@@ -147,8 +147,8 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define CHANGE_SPEED_SET            true  // if enabled and rpm or power triggers escape lawn or a keepslow state, mower will go slow with RETRYSLOWSPEED or KEEPSLOWSPEED with configured RETRYSLOWTIME or KEEPSLOWTIME. Also, in this states MOW_RPM/PWM for _SLOW/RETRY are used for the mowmotor set
 #define MOW_POWERtr_STALL           80    // (%, only used if ESCAPE_LAWN_MODE = 1) if power of mowmotor exceeds e.g 90% of MOWPOWERMAX, escapelawn is triggered
 #define MOW_POWERtr_SLOW            70    // (%, only used if ESCAPE_LAWN_MODE = 1) if power of mowmotor exceeds e.g 70% of MOWPOWERMAX, keepslow is triggered
-#define MOW_RPMtr_STALL             60    // (70)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will back up with ESCAPELAWNDISTANCE and ESCAPELAWNSPEED and try again
-#define MOW_RPMtr_SLOW              75    // (85)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will trigger a keepSlow state with KEEPSLOWSPEED
+#define MOW_RPMtr_STALL             55    // (70)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will back up with ESCAPELAWNDISTANCE and ESCAPELAWNSPEED and try again
+#define MOW_RPMtr_SLOW              70    // (85)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will trigger a keepSlow state with KEEPSLOWSPEED
 //test
 #define TEST_WAIT_BEFORE_REVERSE    false
 #define MOW_RPMtr_WAITZONE          10
@@ -173,9 +173,9 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define DOCK_GPS_REBOOT             true  // if false and DOCK_POINT_GPS_REBOOT is not 0, mower will wait at the DOCK_POINT_GPS_REBOOT point for fix without rebooting GPS, if false and DOCK_POINT_GPS_REBOOT = 0 this function is off (hopefully)
 #define DOCK_GPS_REBOOT_TIME        45000 // (ms) time to wait after rebooting gps for response from ublox?
 //#define GPS_STABLETIME              30000 // (ms) GPS Time with fix solution, before continueing from DOCK_POINT_GPS_REBOOT after undock
-#define DOCK_POINT_GPS_REBOOT       3     // dockpath point where GPS will be rebootet when undocking/docking/retrydocking <-- not implemented yet
-#define DOCK_SLOW_ONLY_LAST_POINTS  3     // trackslow speed will bes used on last dockingpoint and hitting the charger
-#define DOCK_REVERSE_POINT          3     // mower will track reverse if freewheel is at backside (Ardumower) or forward (Landrumower) until at that point
+#define DOCK_POINT_GPS_REBOOT       2     // dockpath point where GPS will be rebootet when undocking/docking/retrydocking <-- not implemented yet
+#define DOCK_SLOW_ONLY_LAST_POINTS  2     // trackslow speed will bes used on last dockingpoint and hitting the charger
+#define DOCK_REVERSE_POINT          2     // mower will track reverse if freewheel is at backside (Ardumower) or forward (Landrumower) until at that point
 //DOCK options keep mower from rotating in dock by all means, needs situation dependent tuning, so be aware!
 #define DOCK_NO_ROTATION            true  // if true, rotation for the mower when reaching or leaving the last dockpoint is not allowed! Make sure mower comes just before the dock in a straight line from the point before, then the last point is the dockposition, on that path angular steering is not allowed!
 #define DOCK_NO_ROTATION_DISTANCE   2.00  // (m) distance to from prelast dockpoint to stop angular motion of mower, make sure mower comes straight to dock on a nice straight and long line. Angular will be 0 after the mower surpassed the prelast point to charger contacts and travel for DOCK_NO_ROTATION_DISTANCE, make sure the mower has fix and is not dangling around when this function triggers. Tuning is neccessary, but works very well. Mower is able to cover some Meters straight afterwards.
