@@ -131,12 +131,12 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 //adaptive_speed settings on RPM or LOAD of mowmotor (consider if you have mowmotor odometrie)
 #define ADAPTIVE_SPEED              true  // if true, mowing speed will adjust to RPM or MOWMOTORPOWER of mow motor on all forward speed mow operations (best)
 #define ADAPTIVE_SPEED_MODE         2     // (1, 2) adaptive speed modes. mode 1 - uses mowmotorpower measurement for speeding up/down; mode 2 - uses rpm measurement of mowmotor for speeding up/down (2: best)
-#define ADAPTIVE_SPEED_USE_MINSPEED false
-#define ADAPTIVE_SPEED_MINSPEED     0.15  // (m/s) defines the ramp of speed between actual speedstates eg. mowing speed and ADAPTIVE_SPEED_MINSPEED
+#define ADAPTIVE_SPEED_USE_MINSPEED true
+#define ADAPTIVE_SPEED_MINSPEED     0.10  // (m/s) defines the ramp of speed between actual speedstates eg. mowing speed and ADAPTIVE_SPEED_MINSPEED
 #define MOWPOWERMAX_AUTO            false // (expirimental) uses highest actual measured mowPower during operation, if true MOWPOWERMAX is ignored
 #define MOWPOWERMIN                 10.0  // (Watt) idle Power of Mowmotor or minimum load power of mowmotor, if under this load mower will have maximum speed
 #define MOWPOWERMAX                 35.0  // (Watt) max load power of mowmotor, when hitting this load mower will be at minspeed        
-#define MOW_RPM_DEADZONE             150  // (rpm) rpm deadzone before speed will be reduced, so if MOW_RPM_NORMAL is 3000, mower will start to reduce speed if rpm is below 2700 
+#define MOW_RPM_DEADZONE             250  // (rpm) rpm deadzone before speed will be reduced, so if MOW_RPM_NORMAL is 3000, mower will start to reduce speed if rpm is below 2700 
 #define MOW_RPM_NORMAL              3200  // (3200)(rpm, only used if USE_MOW_RPM_SET = true) mow motor rpm for mowing (WARNING, you should check if your rpm output works as espected! if it does work, but the reading is wrong, you need to calculate the mowmotorticks per second according to realistic rpm!)
 #define MOW_RPM_SLOW                3400  // (3400)(rpm, only used if USE_MOW_RPM_SET = true) mow motor rpm when MOW_RPMtr_SLOW (%) of MOW_RPM_NORMAL (rpm) is met. Should be higher or the same as MOW_RPM_NORMAL
 #define MOW_RPM_RETRY               3700  // (3600)(rpm, only used if USE_MOW_RPM_SET = true) mow motor rpm when MOW_RPMtr_RETRY (%) of MOW_RPM_NORMAL (rpm) is met. Should be higher or the same as MOW_RPM_SLOW4 (is only used by ESCAPE_LAWN)
@@ -150,10 +150,10 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define MOW_POWERtr_STALL           80    // (%, only used if ESCAPE_LAWN_MODE = 1) if power of mowmotor exceeds e.g 90% of MOWPOWERMAX, escapelawn is triggered 
 #define MOW_POWERtr_SLOW            70    // (%, only used if ESCAPE_LAWN_MODE = 1) if power of mowmotor exceeds e.g 70% of MOWPOWERMAX, keepslow is triggered
 #define MOW_RPMtr_STALL             60    // (70)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will back up with ESCAPELAWNDISTANCE and ESCAPELAWNSPEED and try again
-#define MOW_RPMtr_SLOW              75    // (85)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will trigger a keepSlow state with KEEPSLOWSPEED
+#define MOW_RPMtr_SLOW              75    // (85)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will trigger a keepSlow state with KEEPSLOWSPEED, also this is defining the ramp for the mowerspeed.  If RPM is e.g 75% of 100%, mower will be at ADAPTIVE_SPEED_MINSPEED
 //test
-#define TEST_WAIT_BEFORE_REVERSE    false
-#define MOW_RPMtr_WAITZONE          10
+#define TEST_WAIT_BEFORE_REVERSE    false  
+#define MOW_RPMtr_WAITZONE          5
 #define MOW_RECOVERY_WAIT_TIME      3000
 //test
 #define ESCAPELAWNSPEED             0.35  // (m/s) speed of mower reverse due to MOW_RPM_STALL trigger
