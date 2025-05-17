@@ -644,7 +644,9 @@ float Motor::adaptiveSpeed(){
       x1 = mowPowerMin * 1000;
       x2 = mowPowerMax * 1000; //reach minspeed before powermax
       //if (x2 < x1) x2 = motorMowPowerMax * 1000;    //safety first
-      y1 = MOTOR_MIN_SPEED/linearCurrSet*100; //linearSpeedSet
+      //y1 = MOTOR_MIN_SPEED/linearCurrSet*100; //linearSpeedSet
+      if (ADAPTIVE_SPEED_USE_MINSPEED) y1 = ADAPTIVE_SPEED_MINSPEED/linearCurrSet*100; //linearSpeedSet
+      else y1 = MOTOR_MIN_SPEED/linearCurrSet*100; //linearSpeedSet
       y2 = 100; 
       //CONSOLE.print(x);
       x = ((x2 - x1) * sqrt(x / x2)); //test
@@ -656,8 +658,8 @@ float Motor::adaptiveSpeed(){
       x1 = (abs(motorMowRpmSet) * (MOW_RPMtr_SLOW+5)/100) * 1000; //add some offset to trigger slow, because we dont want to trigger slowstate but become slow before that happens
       x2 = (abs(motorMowRpmSet) - MOW_RPM_DEADZONE) * 1000;         
       y1 = 100;
-      y2 = MOTOR_MIN_SPEED/linearCurrSet*100; //linearSpeedSet
-      
+      if (ADAPTIVE_SPEED_USE_MINSPEED) y2 = ADAPTIVE_SPEED_MINSPEED/linearCurrSet*100; //linearSpeedSet
+      else y2 = MOTOR_MIN_SPEED/linearCurrSet*100; //linearSpeedSet
       if (TEST_WAIT_BEFORE_REVERSE && (abs(motorMowRpmCurrLPFast) > (abs(motorMowRpmSet) * (MOW_RPMtr_STALL)/100)) && (abs(motorMowRpmCurrLPFast) < (abs(motorMowRpmSet) * (MOW_RPMtr_STALL+MOW_RPMtr_WAITZONE)/100))){
         //waitOp.waitTime = 3000;
         triggerWaitCommand(3000);
