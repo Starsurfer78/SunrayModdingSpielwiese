@@ -131,7 +131,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 //adaptive_speed settings on RPM or LOAD of mowmotor (consider if you have mowmotor odometrie)
 #define ADAPTIVE_SPEED              true  // if true, mowing speed will adjust to RPM or MOWMOTORPOWER of mow motor on all forward speed mow operations (best)
 #define ADAPTIVE_SPEED_MODE         2     // (1, 2) adaptive speed modes. mode 1 - uses mowmotorpower measurement for speeding up/down; mode 2 - uses rpm measurement of mowmotor for speeding up/down (2: best)
-#define ADAPTIVE_SPEED_USE_MINSPEED true
+#define ADAPTIVE_SPEED_USE_MINSPEED true  // false: MOTOR_MIN_SPEED is used for slowest possible speed, true: ADAPTIVE_SPEED_MINSPEED is used for slowest possible speed
 #define ADAPTIVE_SPEED_MINSPEED     0.15  // (m/s) defines the ramp of speed between actual speedstates eg. mowing speed and ADAPTIVE_SPEED_MINSPEED
 #define MOWPOWERMAX_AUTO            false // (expirimental) uses highest actual measured mowPower during operation, if true MOWPOWERMAX is ignored
 #define MOWPOWERMIN                 10.0  // (Watt) idle Power of Mowmotor or minimum load power of mowmotor, if under this load mower will have maximum speed
@@ -151,13 +151,15 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define MOW_POWERtr_SLOW            70    // (%, only used if ESCAPE_LAWN_MODE = 1) if power of mowmotor exceeds e.g 70% of MOWPOWERMAX, keepslow is triggered
 #define MOW_RPMtr_STALL             55    // (70)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will back up with ESCAPELAWNDISTANCE and ESCAPELAWNSPEED and try again
 #define MOW_RPMtr_SLOW              70    // (85)(%, only used if ESCAPE_LAWN_MODE = 2) if RPM of mowmotor stalls under % of MOW_RPM_NORMAL mower will trigger a keepSlow state with KEEPSLOWSPEED
-//test
+#define NO_GPS_OBSTACLE             true  // ignore gps obstacle when reversing with escapeLawn?
+#define NO_GPS_OBSTACLE_DEADTIME    7000  // (ms) time of gps obstacle ignorance after escapeLawnOp 
+                          //test
 #define TEST_WAIT_BEFORE_REVERSE    false
 #define MOW_RPMtr_WAITZONE          10
 #define MOW_RECOVERY_WAIT_TIME      3000
-//test
-#define ESCAPELAWNSPEED             0.35  // (m/s) speed of mower reverse due to MOW_RPM_STALL trigger
-#define ESCAPELAWNDISTANCE          0.5   // (m) distance mower reverses with ESCAPELAWNSPEED due to MOW_RPM_STALL triggered
+                          //test
+#define ESCAPELAWNSPEED             0.4  // (m/s) speed of mower reverse due to MOW_RPM_STALL trigger
+#define ESCAPELAWNDISTANCE          0.45   // (m) distance mower reverses with ESCAPELAWNSPEED due to MOW_RPM_STALL triggered
 #define ESCAPELAWNWAITTIME          5000  // (ms) after reversing the second time within ESCAPELAWNTIMER, mower will wait for this time before continue (recover rpm)
 #define ESCAPELAWNTIMER             20000 // (ms) timer to reset retries of ESCAPELAWN, if time is met and retries stay under MAXRETRY triggercounter will reset, otherwise there will be an obstacle error
 #define ESCAPELAWN_DEADTIME         4000  // (ms) deadtime between allowed ESCAPELAWN triggers (deadtime should be the reverse time of action and be calculated in code :| )
@@ -171,7 +173,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 //STANLEY options for experiments
 #define MAP_STANLEY_CONTROL         true  // if true, stanley values will be mapped linear from MOTOR_MIN_SPEED-->MOTOR_MAX_SPEED with SC_P_*|SC_K_* to actual speedset of mower (recommended if you use high operation speeds)
 #define STANLEYNORMALMUL            false // if true, StanleyNormal parameters in Sunray-App will be multiplied by 10! (0,1 = 1) (for testing)
-//GPS reboot for docking/undocking/retrydocking
+//GPS reboot for docking/undocking/retrydocking (WARNING: you need at least 2 points before and behind the point indexes! Dockpoint indexes start with 0 (first point), last point is your dock)
 #define DOCK_GPS_REBOOT             true  // if false and DOCK_POINT_GPS_REBOOT is not 0, mower will wait at the DOCK_POINT_GPS_REBOOT point for fix without rebooting GPS, if false and DOCK_POINT_GPS_REBOOT = 0 this function is off (hopefully)
 #define DOCK_GPS_REBOOT_TIME        45000 // (ms) time to wait after rebooting gps for response from ublox?
 //#define GPS_STABLETIME              30000 // (ms) GPS Time with fix solution, before continueing from DOCK_POINT_GPS_REBOOT after undock
@@ -185,10 +187,10 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define DOCK_NO_ROTATION_SPEED      0.20  // (m/s) (original it was 0.10, made it changeable...) when angular is not allowed while going to dockposition, this speed is used
 //GPS options
 #define GPS_COLD_RESET              true  // perform a cold reset of gps receiver instead a warm reset
-#define SOLUTION_TIMEOUT            5000  // (ms) communication timeout with ublox, original it is set to 1000 ms ... long cycle times of code like pathfinder will lead to an invalid solution
+#define SOLUTION_TIMEOUT            2000  // (ms) communication timeout with ublox, original it is set to 1000 ms ... long cycle times of code like pathfinder will lead to an invalid solution
 #define GPS_RESET_WAIT_FIX          true  // reset GPS if mower is in a float timeout for GPS_RESET_WAIT_FIX_TIME?
 #define GPS_RESET_WAIT_FIX_TIME     5     // (min) time in minutes to reset gps if mower is in a float timeout without getting fix within GPS_RESET_WAIT_FIX_TIME
-#define NO_GPS_SIGNAL_TIMEOUT       20000 // (ms) mower is allowed to run in an GPS invalid state for given time....
+#define NO_GPS_SIGNAL_TIMEOUT       2000 // (ms) mower is allowed to run in an GPS invalid state for given time....
 #define GPS_JUMP_WAIT               true  // if a GPS jump is detected, should the mower wait?
 #define GPS_JUMP_WAIT_TIME          30000 // (ms) waittime if there was a GPS jump
 //#define GPS_JUMP_DISTANCE         0.4   // (m) the sudden difference from last GPS position to new position, that will trigger a GPS jump positive <-- to be added
@@ -215,7 +217,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define DRVFIXTIMER                 60000 // (ms) timer for DRV8308_FIX, everytime timer is met, function will run once for DRVFIXITERATIONS and set pwm of drivers to 1
 #define PWM_GEAR                    1     // PWM for DRVFIX efforts..
 #define PWM_MOW                     1     // PWM for DRVFIX efforts..
-//DRIVER (try to fix 8308 driver with moving, only works reliable with "DOCK_RETRY_TOUCH = true"! tested and seems to be a valid workaround for the DRV8308 related dock stuck issue (keep FALSE if you have no issues or no DRV8308))
+//DRIVER (try to fix 8308 driver with moving, only works with "DOCK_RETRY_TOUCH = true"! tested and seems to be a valid workaround for the DRV8308 related dock freeze/stuck issue (keep FALSE if you have no issues or no DRV8308))
 #define MOVE_REGULARLY              true  // if true, mower will move in dock in given MOVE_AGAIN_AFTER time, kk: move mower to keep 8308 alive
 #define MOVE_AGAIN_AFTER            9.0  // move the mower every xx minutes
 #define MOVING_TIME                 400   // time (ms) for moving back

@@ -21,9 +21,10 @@ void EscapeLawnOp::begin(){
     if (escapeLawnCounter == 0)	escapeLawnStartTime = millis();   															//set triggered time on entrance if escapeLawnCounter successfully resets	
 	escapeLawnCounter++;																									//iterate counter		
 	if (((escapeLawnStartTime + ESCAPELAWNTIMER) < millis()) && (escapeLawnCounter <= MAXRETRY)) escapeLawnCounter = 0;		//reset counter if ESCAPELAWNTIME succeded without too many triggers of EscapeLawn
-
 	driveReverseStopTime = millis() + (escapeLawnDistance/ESCAPELAWNSPEED*1000);     										//MrTree just take a deadtime of 500ms to compensate deadtimes.. workaround...
     escapeLawnWaitTime	= 0;
+	gpsObstacleNotAllowedTime = millis() + NO_GPS_OBSTACLE_DEADTIME;
+	gpsObstacleNotAllowed = true;
 	CONSOLE.print("escapeLawnCounter = ");
 	CONSOLE.println(escapeLawnCounter);	
 	CONSOLE.print("escapeLawnDistance = ");
@@ -95,6 +96,8 @@ void EscapeLawnOp::run(){
 				  CONSOLE.println("EscapeLawnOp: high lawn, continue operation without virtual obstacle");  //MrTree
 				  CONSOLE.println("EscapeLawnOp: triggering retryslow!");
 				  escapeFinished = true;
+				  gpsObstacleNotAllowed = true;
+				  gpsObstacleNotAllowedTime = millis() + NO_GPS_OBSTACLE_DEADTIME;
 				  motor.motorMowStallFlag = false; //MrTree reset flag if triggered by rpm stall
 				  if (CHANGE_SPEED_SET) motor.retryslow = true;
 				  motor.retrySlowTime = millis()+RETRYSLOWTIME; 	//trigger slow retry, set keepSlowTime 

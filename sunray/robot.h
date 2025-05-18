@@ -97,6 +97,8 @@ extern bool stateInMotionLP; // robot is in angular or linear motion? (with moti
 
 extern unsigned long lastFixTime;
 
+extern unsigned long gpsObstacleNotAllowedTime; //MrTree
+extern bool gpsObstacleNotAllowed; //MrTree
 extern float escapeLawnDistance;       //MrTree
 extern bool escapeFinished;            //MrTree               
 extern bool RC_Mode;                   //MrTree
@@ -110,6 +112,7 @@ extern unsigned long controlLoops;
 extern bool wifiFound;
 extern int motorErrorCounter;
 extern int motorMowStallCounter; //MrTree
+
 
 #ifdef DRV_SERIAL_ROBOT
   extern SerialRobotDriver robotDriver;

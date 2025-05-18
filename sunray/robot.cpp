@@ -133,6 +133,8 @@ unsigned long stateButtonTimeout = 0;
 
 float escapeLawnDistance = ESCAPELAWNDISTANCE; //MrTree
 bool escapeFinished = true; //MrTree
+bool gpsObstacleNotAllowed = false; //MrTree
+unsigned long gpsObstacleNotAllowedTime = 0; //MrTree
 unsigned long escapeLawnTriggerTime = 0; //MrTree
 bool RC_Mode = false; //MrTree
 const long watchdogTime = WATCHDOG_TIME;
@@ -823,6 +825,7 @@ void triggerObstacleRotation(){
 
 void detectLawn(){ //MrTree
   static unsigned long motorMowStallTime = 0;
+  //if (millis() > gpsObstacleNotAllowedTime) gpsObstacleNotAllowed = false;
   if (!motor.switchedOn || motor.waitMowMotor()) return;
   if (ESCAPE_LAWN){ //MrTree option for triggering escapelawn with actual measured rpm stall
     if ((millis() > (escapeLawnTriggerTime + ESCAPELAWN_DEADTIME)) && motor.motorMowStallFlag){
@@ -893,7 +896,7 @@ bool detectObstacle(){
   static unsigned long noGPSSpeedTime = 0;
 
   if (!robotShouldMove()) return false;   
-  
+  if (millis() > gpsObstacleNotAllowedTime) gpsObstacleNotAllowed = false; //MrTree
   // lift
   #ifdef ENABLE_LIFT_DETECTION
     #ifdef LIFT_OBSTACLE_AVOIDANCE
@@ -941,6 +944,10 @@ bool detectObstacle(){
   if (millis() > linearMotionStartTime + GPS_SPEED_DEADTIME) {
     if (stateGroundSpeed < fabs(motor.linearSpeedSet/4)) {
       noGPSSpeedTime += deltaTime;
+      if (NO_GPS_OBSTACLE && gpsObstacleNotAllowed){
+        CONSOLE.println("GPS_SPEED_DETECTION: ignoring gps no groundspeed!");
+        return false;
+      }
       if ((GPS_SPEED_DETECTION && !maps.isAtDockPath()) && (noGPSSpeedTime > GPS_SPEED_DELAY)){
         CONSOLE.println("GPS_SPEED_DETECTION: gps no groundspeed => assume obstacle!");
         statMowGPSMotionTimeoutCounter++;
@@ -964,6 +971,10 @@ bool detectObstacle(){
     float dY = lastGPSMotionY - stateY;
     float delta = sqrt( sq(dX) + sq(dY) );    
     if (delta < GPS_MOTION_DETECTION_DELTA){ //MrTree 0.05
+      if (NO_GPS_OBSTACLE && gpsObstacleNotAllowed){
+        CONSOLE.println("GPS_MOTION_DETECTION: ignoring gps no groundspeed!");
+        return false;
+      }
       if (GPS_MOTION_DETECTION){
         //if (robotShouldMoveForward()){
           CONSOLE.println("GPS_MOTION_DETECTION: gps no motion => assume obstacle!");

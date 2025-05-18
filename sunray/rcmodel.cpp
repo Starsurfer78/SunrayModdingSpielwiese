@@ -112,16 +112,16 @@ void RCModel::run()
          
     //lin_PPM = 0;
     if (PPM_start_linear < PPM_end_linear) lin_PWM = PPM_end_linear - PPM_start_linear; 
-    if (lin_PWM < 2001 && lin_PWM > 999)                                        // Wert innerhalb 1100 bis 1900µsec
+    if (lin_PWM < 2001 && lin_PWM > 1250)                                        // Wert innerhalb 1100 bis 1900µsec
     { 
       CHAN_1_med.add(lin_PWM);
       //CHAN_1_med.getMedian(lin_PWM);
       lin_PWM = CHAN_1_med.getMedian();
       CHAN_1x = map(lin_PWM, 1000, 2000, -600, 600);
       CHAN_1x /= 1000.0;
-      if ((CHAN_1x < 0.02) && (CHAN_1x > -0.02)) CHAN_1x = 0;                   // NullLage vergrössern
+      if ((CHAN_1x < 0.04) && (CHAN_1x > -0.04)) CHAN_1x = 0;                   // NullLage vergrössern
       rc_linear = CHAN_1x;                                                    // Weitergabe
-    }
+    } else rc_linear=0;
 
     //ang_PPM = 0;
     if (PPM_start_angular < PPM_end_angular) ang_PWM = PPM_end_angular - PPM_start_angular; 
@@ -132,13 +132,13 @@ void RCModel::run()
       ang_PWM = CHAN_2_med.getMedian();   
       CHAN_2x = map(ang_PWM, 1000, 2000, -PI*1000, PI*1000);
       CHAN_2x /= 1000.0;
-      if ((CHAN_2x < 0.01) && (CHAN_2x > -0.01)) CHAN_2x = 0;                   // NullLage vergrössern         
+      if ((CHAN_2x < 0.03) && (CHAN_2x > -0.03)) CHAN_2x = 0;                   // NullLage vergrössern         
       rc_angular = CHAN_2x;
-    }
+    } else rc_angular = 0;
     
     //mowmotor
     if (PPM_start_mow < PPM_end_mow) mow_PWM = PPM_end_mow - PPM_start_mow; 
-    if (mow_PWM < 2101 && mow_PWM > 899)                                      // Wert innerhalb 1100 bis 1900µsec
+    if (mow_PWM < 2101 && mow_PWM > 1000)                                      // Wert innerhalb 1100 bis 1900µsec
     { 
       CHAN_3_med.add(mow_PWM);
       //CHAN_3_med.getMedian(mow_PWM);
@@ -151,6 +151,9 @@ void RCModel::run()
 
       if (USE_MOW_RPM_SET) motor.mowRPM_RC = rc_mowRPM;
       else motor.mowPWM_RC = rc_mowPWM;
+    } else {
+      rc_mowPWM = 0;
+      rc_mowRPM = 0;
     }
    motor.setLinearAngularSpeed(rc_linear, rc_angular, false);                     // R/C Signale an Motor leiten
    if (bMow != motor.switchedOn) motor.setMowState(bMow);                         // bMow vom Poti als Schwellwertschalter
