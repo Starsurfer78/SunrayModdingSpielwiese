@@ -34,26 +34,27 @@ volatile unsigned long PPM_end_mow = 0 ;
 
 void get_lin_PPM()                                                        // Interrupt Service Routine
 {
-  if (digitalRead(pinRemoteMow)==HIGH) PPM_start_linear = micros();  
-  else                                   PPM_end_linear = micros();    
+  //if (digitalRead(pinRemoteMow)==HIGH) PPM_start_linear = micros();  
+  //else                                   PPM_end_linear = micros();    
 }
 
 void get_ang_PPM()                                                        // Interrupt Service Routine
 {
-  if (digitalRead(pinRemoteSteer)==HIGH) PPM_start_angular = micros();  
-  else                                   PPM_end_angular = micros();  
+  //if (digitalRead(pinRemoteSteer)==HIGH) PPM_start_angular = micros();  
+  //else                                   PPM_end_angular = micros();  
 }
 
 void get_mow_PPM()                                                        // Interrupt Service Routine
 {
-  if (digitalRead(pinLift)==HIGH) PPM_start_mow = micros();  
-  else                                   PPM_end_mow = micros();  
+  //if (digitalRead(pinLift)==HIGH) PPM_start_mow = micros();  
+  //else                                   PPM_end_mow = micros();  
 }
 
 
 
 void RCModel::begin()
-{                                   
+{
+  /*                                   
   RC_Mode = false; 
   nextControlTime = 0;
 
@@ -158,4 +159,5 @@ void RCModel::run()
    motor.setLinearAngularSpeed(rc_linear, rc_angular, false);                     // R/C Signale an Motor leiten
    if (bMow != motor.switchedOn) motor.setMowState(bMow);                         // bMow vom Poti als Schwellwertschalter
   }
+   */
 }

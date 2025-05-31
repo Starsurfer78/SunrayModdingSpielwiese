@@ -582,7 +582,7 @@ void outputConfig(){
 // robot start routine
 void start(){    
   pinMan.begin();
-  pinMode(pinRemoteSpeed, OUTPUT);      //********* Relais Board K1 LED LIGHT          
+  //pinMode(pinRemoteSpeed, OUTPUT);      //********* Relais Board K1 LED LIGHT          
   // keep battery switched ON
   batteryDriver.begin();  
   CONSOLE.begin(CONSOLE_BAUDRATE);    
@@ -1174,9 +1174,9 @@ void run(){
   // LED LIGHTS
   if (stateChargerConnected) { 
     robot_control_cycle = ROBOT_IDLE_CYCLE;         
-    digitalWrite(pinRemoteSpeed, HIGH);
+    //digitalWrite(pinRemoteSpeed, HIGH);
   } else {
-    digitalWrite(pinRemoteSpeed, LOW);
+    //digitalWrite(pinRemoteSpeed, LOW);
     robot_control_cycle = ROBOT_CONTROL_CYCLE;          
   }
   
