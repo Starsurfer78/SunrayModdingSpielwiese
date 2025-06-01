@@ -333,7 +333,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 // shall the mow motor be activated for normal operation? Deactivate this option for GPS tests and path tracking running tests
 #define ENABLE_MOW_MOTOR true // Default is true, set false for testing purpose to switch off mow motor permanently
 
-#define MOW_FAULT_CURRENT 4.0         // mowing motor fault current (amps)
+#define MOW_FAULT_CURRENT 4.5         // mowing motor fault current (amps)
 #define MOW_TOO_LOW_CURRENT 0.005     // mowing motor too low current (amps)
 #define MOW_OVERLOAD_CURRENT 2.0      // mowing motor overload current (amps)
 #define MOW_OVERLOAD_ERROR_TIME 10000 // mowing motor overload until error time (ms)
@@ -548,15 +548,15 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define TARGET_REACHED_TOLERANCE 0.07
 
 // stanley control for path tracking - determines gain how fast to correct for lateral path errors
-#define STANLEY_CONTROL_P_NORMAL  3.5   // 3.4 // 3.0 for path tracking control (angular gain) when mowing
-#define STANLEY_CONTROL_K_NORMAL  2.0  // 2.3 // 1.0 for path tracking control (lateral gain) when mowing
+#define STANLEY_CONTROL_P_NORMAL  3.6   // 3.4 // 3.0 for path tracking control (angular gain) when mowing
+#define STANLEY_CONTROL_K_NORMAL  2.1  // 2.3 // 1.0 for path tracking control (lateral gain) when mowing
 #define STANLEY_FLOAT_P_NORMAL         1.5
 #define STANLEY_FLOAT_K_NORMAL         0.5
 
 #define STANLEY_CONTROL_P_SLOW    1.0   // 1 // 3.0 for path tracking control (angular gain) when docking tracking
 #define STANLEY_CONTROL_K_SLOW    0.5  // 0.05 // 0.1 for path tracking control (lateral gain) when mowing or docking
-#define STANLEY_FLOAT_P_SLOW           0.5
-#define STANLEY_FLOAT_K_SLOW           0.1
+#define STANLEY_FLOAT_P_SLOW           0.6
+#define STANLEY_FLOAT_K_SLOW           0.2
 
 
 
