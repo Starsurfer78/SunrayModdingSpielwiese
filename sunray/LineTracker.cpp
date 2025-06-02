@@ -286,20 +286,25 @@ float distanceRamp(float linear){
     return rampSpeed;
 }
 
-void gpsConditions() {
-  // check some pre-conditions that can make linear+angular speed zero
+// check gps conditions during linetracking that will trigger different operations
+void gpsConditions() {                                                
+  
   if (fixTimeout != 0) {
     if (millis() > lastFixTime + fixTimeout * 1000.0) {
       activeOp->onGpsFixTimeout();
     }
   }
-  //CONSOLE.print(maps.shouldGpsReboot); CONSOLE.print(" <- shouldreboot | isatgpsrebootpoint -> "); CONSOLE.print(maps.isAtGpsRebootPoint()); CONSOLE.print(" | dockPointIdx: ");CONSOLE.println(maps.dockPointsIdx);
-  if (maps.shouldGpsReboot && maps.isAtGpsRebootPoint()){
-    activeOp->onDockGpsReboot();
+
+  //rebooting gps on undock/dock/retrydock
+  if (DOCK_GPS_REBOOT) {
+    //CONSOLE.print(maps.shouldGpsReboot); CONSOLE.print(" <- shouldreboot | isatgpsrebootpoint -> "); CONSOLE.print(maps.isAtGpsRebootPoint()); CONSOLE.print(" | dockPointIdx: ");CONSOLE.println(maps.dockPointsIdx);
+    if (maps.shouldGpsReboot && maps.isAtGpsRebootPoint()){
+      activeOp->onDockGpsReboot();
+    }
   }
 
   // gps-jump/false fix check
-  if (KIDNAP_DETECT) {
+  if (KIDNAP_DETECT) {                                                 
     float allowedPathTolerance = KIDNAP_DETECT_ALLOWED_PATH_TOLERANCE;
     if ( maps.isUndocking() || maps.isDocking() ) {
       float dockX = 0;
@@ -329,7 +334,7 @@ void gpsConditions() {
 
 void noDockRotation() {
   if (maps.wayMode != WAY_DOCK) return;
-  if ((maps.isTargetingLastDockPoint() && !maps.isUndocking())){        //MrTree step in algorithm if allowDockRotation (computed in maps.cpp) is false and mower is not undocking
+  if ((maps.isTargetingLastDockPoint() && !maps.isUndocking())){      //MrTree step in algorithm if allowDockRotation (computed in maps.cpp) is false and mower is not undocking
     if (!dockTimer){                                                  //set helper bool to start a timer and print info once
       reachedPointBeforeDockTime = millis();                          //start a timer when going to last dockpoint
       dockTimer = true;                                               //enables following code
