@@ -195,7 +195,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define GPS_JUMP_WAIT_TIME          30000 // (ms) waittime if there was a GPS jump
 //#define GPS_JUMP_DISTANCE         0.4   // (m) the sudden difference from last GPS position to new position, that will trigger a GPS jump positive <-- to be added 
 //OTHER
-#define FLOAT_CALC                  1     // better float handling?
+//#define FLOAT_CALC                  1     // better float handling?
 #define MOW_START_AT_WAYMOW         true  // mowmotor only starts if way state of mower is waymow for the first time, used for mowmotor not starting directly at dock, but at mow area. This is a onetime trigger that only works when mower is (---> undocking ) ---> wayfree ---> mowarea ---> start mowmotor. After this, mowmotor will behave like it used to be
 #define WATCHDOG_CONTINUE           false // set true if you have watchdog reset issues, mower will start mowing after rebooting
 #define WATCHDOG_TIME               16000 // (ms) resettimer for watchdog trigger
