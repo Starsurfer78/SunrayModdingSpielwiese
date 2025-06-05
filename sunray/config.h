@@ -82,7 +82,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 // should the lift sensor be enabled? (yes: uncomment line, no: comment line)
 //#define ENABLE_LIFT_DETECTION  1
 // should the lift sensor be used for obstacle avoidance (if not, mower will simply go into error if lifted)
-#define LIFT_OBSTACLE_AVOIDANCE 1  
+// #define LIFT_OBSTACLE_AVOIDANCE 1  
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //Modsection START
@@ -333,9 +333,9 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 // shall the mow motor be activated for normal operation? Deactivate this option for GPS tests and path tracking running tests
 #define ENABLE_MOW_MOTOR true // Default is true, set false for testing purpose to switch off mow motor permanently
 
-#define MOW_FAULT_CURRENT 4.0         // mowing motor fault current (amps)
+#define MOW_FAULT_CURRENT 4.5         // mowing motor fault current (amps)
 #define MOW_TOO_LOW_CURRENT 0.005     // mowing motor too low current (amps)
-#define MOW_OVERLOAD_CURRENT 2.0      // mowing motor overload current (amps)
+#define MOW_OVERLOAD_CURRENT 2.2      // mowing motor overload current (amps)
 #define MOW_OVERLOAD_ERROR_TIME 10000 // mowing motor overload until error time (ms)
 
 // should the direction of mowing motor toggle each start? (yes: true, no: false)
@@ -416,9 +416,9 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define SONAR_ENABLE true              // should ultrasonic sensor be used?
 //#define SONAR_ENABLE false
 #define SONAR_TRIGGER_OBSTACLES false     // should sonar be used to trigger obstacles? if not, mower will only slow down
-#define SONAR_LEFT_OBSTACLE_CM   30     // slow down or stop mowing operation below this distance (cm) 
-#define SONAR_CENTER_OBSTACLE_CM 30      // slow down or stop mowing operation below this distance (cm) 
-#define SONAR_RIGHT_OBSTACLE_CM  30      // slow down or stop mowing operation below this distance (cm) 
+#define SONAR_LEFT_OBSTACLE_CM   35     // slow down or stop mowing operation below this distance (cm) 
+#define SONAR_CENTER_OBSTACLE_CM 35      // slow down or stop mowing operation below this distance (cm) 
+#define SONAR_RIGHT_OBSTACLE_CM  35      // slow down or stop mowing operation below this distance (cm) 
 
 // ------ rain sensor ----------------------------------------------------------
 #define RAIN_ENABLE true                 // if activated, mower will dock when rain sensor triggers
@@ -452,9 +452,9 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define BAT_FULL_SLOPE    0.002  // start mowing again below this voltage slope
 
 // https://wiki.ardumower.de/index.php?title=Ardumower_Sunray#Automatic_battery_switch_off
-#define BAT_SWITCH_OFF_IDLE  true         // switch off if idle (JP8 must be set to autom.)
+#define BAT_SWITCH_OFF_IDLE  false         // switch off if idle (JP8 must be set to autom.)
 #define BAT_SWITCH_OFF_IDLE_TIME 500      // MrTree seconds when switching of in idle state
-#define BAT_SWITCH_OFF_UNDERVOLTAGE  true  // switch off if undervoltage (JP8 must be set to autom.)
+#define BAT_SWITCH_OFF_UNDERVOLTAGE true  // switch off if undervoltage (JP8 must be set to autom.)
 #define BAT_SWITCH_OFF_VOLTAGE 20.0       //switch off mower if under this voltage
 
 // ------ GPS ------------------------------------------
@@ -520,9 +520,9 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 // (false GPS fix recovery), and if that fails go into error 
 #define KIDNAP_DETECT true  // recommended
 //#define KIDNAP_DETECT false
-#define KIDNAP_DETECT_ALLOWED_PATH_TOLERANCE 2.0  // allowed path tolerance (m) 
-#define KIDNAP_DETECT_ALLOWED_PATH_TOLERANCE_DOCK_UNDOCK 5.0  // allowed path tolerance (m) 
-#define KIDNAP_DETECT_DISTANCE_DOCK_UNDOCK 10.0  // distance from dock in (m) to use KIDNAP_DETECT_ALLOWED_PATH_TOLERANCE_DOCK_UNDOCK
+#define KIDNAP_DETECT_ALLOWED_PATH_TOLERANCE 1.5  // allowed path tolerance (m) 
+#define KIDNAP_DETECT_ALLOWED_PATH_TOLERANCE_DOCK_UNDOCK 10.0  // allowed path tolerance (m) 
+#define KIDNAP_DETECT_DISTANCE_DOCK_UNDOCK 20.0  // distance from dock in (m) to use KIDNAP_DETECT_ALLOWED_PATH_TOLERANCE_DOCK_UNDOCK
 
 // ------ docking --------------------------------------
 // is a docking station available?
@@ -548,8 +548,8 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define TARGET_REACHED_TOLERANCE 0.07
 
 // stanley control for path tracking - determines gain how fast to correct for lateral path errors
-#define STANLEY_CONTROL_P_NORMAL  3.5   // 3.4 // 3.0 for path tracking control (angular gain) when mowing
-#define STANLEY_CONTROL_K_NORMAL  2.0  // 2.3 // 1.0 for path tracking control (lateral gain) when mowing
+#define STANLEY_CONTROL_P_NORMAL  3.6   // 3.4 // 3.0 for path tracking control (angular gain) when mowing
+#define STANLEY_CONTROL_K_NORMAL  2.1  // 2.3 // 1.0 for path tracking control (lateral gain) when mowing
 #define STANLEY_FLOAT_P_NORMAL         1.5
 #define STANLEY_FLOAT_K_NORMAL         0.5
 
