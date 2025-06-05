@@ -286,25 +286,22 @@ float distanceRamp(float linear){
     return rampSpeed;
 }
 
-// check gps conditions during linetracking that will trigger different operations
-void gpsConditions() {                                                
-  
+void gpsConditions() {
+  // check some pre-conditions that can make linear+angular speed zero
   if (fixTimeout != 0) {
     if (millis() > lastFixTime + fixTimeout * 1000.0) {
       activeOp->onGpsFixTimeout();
     }
   }
-
-  //rebooting gps on undock/dock/retrydock
+  //CONSOLE.print(maps.shouldGpsReboot); CONSOLE.print(" <- shouldreboot | isatgpsrebootpoint -> "); CONSOLE.print(maps.isAtGpsRebootPoint()); CONSOLE.print(" | dockPointIdx: ");CONSOLE.println(maps.dockPointsIdx);
   if (DOCK_GPS_REBOOT) {
-    //CONSOLE.print(maps.shouldGpsReboot); CONSOLE.print(" <- shouldreboot | isatgpsrebootpoint -> "); CONSOLE.print(maps.isAtGpsRebootPoint()); CONSOLE.print(" | dockPointIdx: ");CONSOLE.println(maps.dockPointsIdx);
     if (maps.shouldGpsReboot && maps.isAtGpsRebootPoint()){
       activeOp->onDockGpsReboot();
     }
   }
 
   // gps-jump/false fix check
-  if (KIDNAP_DETECT) {                                                 
+  if (KIDNAP_DETECT) {
     float allowedPathTolerance = KIDNAP_DETECT_ALLOWED_PATH_TOLERANCE;
     if ( maps.isUndocking() || maps.isDocking() ) {
       float dockX = 0;
@@ -333,58 +330,64 @@ void gpsConditions() {
 }
 
 void noDockRotation() {
-  if (maps.wayMode != WAY_DOCK) return;
-  if ((maps.isTargetingLastDockPoint() && !maps.isUndocking())){      //MrTree step in algorithm if allowDockRotation (computed in maps.cpp) is false and mower is not undocking
-    if (!dockTimer){                                                  //set helper bool to start a timer and print info once
-      reachedPointBeforeDockTime = millis();                          //start a timer when going to last dockpoint
-      dockTimer = true;                                               //enables following code
-      CONSOLE.println("allowDockRotation = false, timer to successfully dock startet. angular = 0, turning not allowed");
-    }
-    if (dockTimer){
-      //resetLinearMotionMeasurement();                                         //need to test if this is still neccessary
-      if (lastTargetDist > DOCK_NO_ROTATION_DISTANCE){                          //testing easier approach for DOCK_NO_ROTATION setup
-        angular = 0;
-        linear = DOCK_NO_ROTATION_SPEED;
-        targetReached = false;
-        if (!buzzer.isPlaying()) buzzer.sound(SND_ERROR, true);                  
+  if (DOCK_NO_ROTATION) {
+    if (maps.wayMode != WAY_DOCK) return;
+    if ((maps.isTargetingLastDockPoint() && !maps.isUndocking())){        //MrTree step in algorithm if allowDockRotation (computed in maps.cpp) is false and mower is not undocking
+      if (!dockTimer){                                                  //set helper bool to start a timer and print info once
+        reachedPointBeforeDockTime = millis();                          //start a timer when going to last dockpoint
+        dockTimer = true;                                               //enables following code
+        CONSOLE.println("allowDockRotation = false, timer to successfully dock startet. angular = 0, turning not allowed");
       }
-      if (millis() > reachedPointBeforeDockTime+DOCK_NO_ROTATION_TIMER){      //check the time until mower has to reach the charger and triger obstacle if not reached
-        CONSOLE.println("noDockRotation(): not docked in given time, triggering maps.retryDocking!");
-        dockTimer = false;
-        triggerObstacle();     
-      } 
+      if (dockTimer){
+        //resetLinearMotionMeasurement();                                         //need to test if this is still neccessary
+        if (lastTargetDist > DOCK_NO_ROTATION_DISTANCE){                          //testing easier approach for DOCK_NO_ROTATION setup
+          angular = 0;
+          linear = DOCK_NO_ROTATION_SPEED;
+          targetReached = false;
+          if (!buzzer.isPlaying()) buzzer.sound(SND_ERROR, true);                  
+        }
+        if (millis() > reachedPointBeforeDockTime+DOCK_NO_ROTATION_TIMER){      //check the time until mower has to reach the charger and triger obstacle if not reached
+          CONSOLE.println("noDockRotation(): not docked in given time, triggering maps.retryDocking!");
+          dockTimer = false;
+          triggerObstacle();     
+        } 
+      }
+    } else {
+        dockTimer = false;     
     }
-  } else {
-      dockTimer = false;     
+    return;
   }
   return;
 }
 
 void noUnDockRotation(){
-  if (maps.wayMode != WAY_DOCK) return;
-  if (maps.isBetweenLastAndNextToLastDockPoint() && maps.isUndocking()){
-    if (!unDockTimer){                                                  //set helper bool to start a timer and print info once
-      reachedPointBeforeDockTime = millis();                          //start a timer when going to last dockpoint
-      unDockTimer = true;                                               //enables following code
-      CONSOLE.println("noUnDockRotation(): timer to successfully undock startet. angular = 0, turning not allowed");
+  if (DOCK_NO_ROTATION) {
+    if (maps.wayMode != WAY_DOCK) return;
+    if (maps.isBetweenLastAndNextToLastDockPoint() && maps.isUndocking()){
+      if (!unDockTimer){                                                  //set helper bool to start a timer and print info once
+        reachedPointBeforeDockTime = millis();                          //start a timer when going to last dockpoint
+        unDockTimer = true;                                               //enables following code
+        CONSOLE.println("noUnDockRotation(): timer to successfully undock startet. angular = 0, turning not allowed");
+      }
+      if (unDockTimer){
+        //resetLinearMotionMeasurement();                                         //need to test if this is still neccessary
+                                //testing easier approach for DOCK_NO_ROTATION setup
+        angular = 0;
+        linear = -DOCK_NO_ROTATION_SPEED;
+        if (!buzzer.isPlaying()) buzzer.sound(SND_ERROR, true);                  
+        if (millis() > reachedPointBeforeDockTime+DOCK_NO_ROTATION_TIMER){      //check the time until mower has to reach the charger and triger obstacle if not reached
+          CONSOLE.println("noUnDockRotation(): reversed for given Time, triggering Wait before further retreating to reboot gps point!");
+          unDockTimer = false;
+          maps.dockPointsIdx--;
+          //targetReached = true;
+          //waitOp.waitTime = 15000;
+          triggerWaitCommand(15000);    
+        } 
+      }
+    } else {
+        unDockTimer = false;     
     }
-    if (unDockTimer){
-      //resetLinearMotionMeasurement();                                         //need to test if this is still neccessary
-                               //testing easier approach for DOCK_NO_ROTATION setup
-      angular = 0;
-      linear = -DOCK_NO_ROTATION_SPEED;
-      if (!buzzer.isPlaying()) buzzer.sound(SND_ERROR, true);                  
-      if (millis() > reachedPointBeforeDockTime+DOCK_NO_ROTATION_TIMER){      //check the time until mower has to reach the charger and triger obstacle if not reached
-        CONSOLE.println("noUnDockRotation(): reversed for given Time, triggering Wait before further retreating to reboot gps point!");
-        unDockTimer = false;
-        maps.dockPointsIdx--;
-        //targetReached = true;
-        //waitOp.waitTime = 15000;
-        triggerWaitCommand(15000);    
-      } 
-    }
-  } else {
-      unDockTimer = false;     
+    return;
   }
   return;  
 }

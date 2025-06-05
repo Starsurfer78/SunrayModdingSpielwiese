@@ -82,7 +82,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 // should the lift sensor be enabled? (yes: uncomment line, no: comment line)
 //#define ENABLE_LIFT_DETECTION  1
 // should the lift sensor be used for obstacle avoidance (if not, mower will simply go into error if lifted)
-//#define LIFT_OBSTACLE_AVOIDANCE 1  
+#define LIFT_OBSTACLE_AVOIDANCE 1  
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //Modsection START
@@ -123,14 +123,14 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define TRANSITION_SPEED            0.10  // (m/s) speed for transition to next point angle
 //use a PID controller for mowmotor to set an RPM instead of PWM? If you use this (there will be a console output with data after 10sec when you activate the mowmotor and this is enabled)
 //CONFIG HINT: for the following options it is important if you have mow motor odometrie: USE_MOW_RPM_SET, ADAPTIVE_SPEED_MODE, ESCAPE_LAWN_MODE. If you do not have odometrie: use mode 1 on both cases and set USE_MOW_RPM_SET = false, if you have odometrie use mode 2 on both cases and set USE_MOW_RPM_SET = true (recommended)
-#define USE_MOW_RPM_SET             true  // uses RPM instead of PWM to set mowmotor (RPM_FAULT_DETECTION of orig Sunray is best to be set TRUE for all RPM based functions!!)
+#define USE_MOW_RPM_SET             false  // uses RPM instead of PWM to set mowmotor (RPM_FAULT_DETECTION of orig Sunray is best to be set TRUE for all RPM based functions!!)
 #define MOWMOTOR_RPM_OFFSET         310   // compensate small RPM offsets (positive if RPM reading is less then RPM setpoint)
 #define MOWMOTOR_PID_KP             0.0032// (0.0024 Mowmotordriver DRV8308) (0.0018 JYQD) this is enough to compensate battery drainage over time and have a slow spinup, there may be a controlleroffset to rpm which has to be thought of... RPM_OFFSET
 #define MOWMOTOR_PID_KI             0.01  // (0.04 (Mowmotordriver DRV8308/JYQD))
 #define MOWMOTOR_PID_KD             0.00  // (0.0000 (Mowmotordriver DRV8308/JYQD))
 //adaptive_speed settings on RPM or LOAD of mowmotor (consider if you have mowmotor odometrie)
 #define ADAPTIVE_SPEED              true  // if true, mowing speed will adjust to RPM or MOWMOTORPOWER of mow motor on all forward speed mow operations (best)
-#define ADAPTIVE_SPEED_MODE         2     // (1, 2) adaptive speed modes. mode 1 - uses mowmotorpower measurement for speeding up/down; mode 2 - uses rpm measurement of mowmotor for speeding up/down (2: best)
+#define ADAPTIVE_SPEED_MODE         1     // (1, 2) adaptive speed modes. mode 1 - uses mowmotorpower measurement for speeding up/down; mode 2 - uses rpm measurement of mowmotor for speeding up/down (2: best)
 #define ADAPTIVE_SPEED_USE_MINSPEED true  // false: MOTOR_MIN_SPEED is used for slowest possible speed, true: ADAPTIVE_SPEED_MINSPEED is used for slowest possible speed
 #define ADAPTIVE_SPEED_MINSPEED     0.05  // (m/s) defines the ramp of speed between actual speedstates eg. mowing speed and ADAPTIVE_SPEED_MINSPEED
 #define MOWPOWERMAX_AUTO            false // (expirimental) uses highest actual measured mowPower during operation, if true MOWPOWERMAX is ignored
@@ -145,7 +145,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define MOW_PWM_RETRY               235   // (pwm, only used if USE_MOW_RPM_SET = false) pwm of mow motor when during mowing a retryslow state is triggered (after escape lawn). Should be higher or the same as MOW_PWM_SLOW
 //ESCAPELAWN operation, mower will backup on a mowmotor stall and retry with given values... after the first try and still stalling, it backs up and waits for mowmotor to recover
 #define ESCAPE_LAWN                 true  // mower drives reverse if true and RPM stall of mow motor is detected by more than MOW_RPMtr_STALL(percentage), only available if ENABLE_RPM_FAULT_DETECTION true (best)
-#define ESCAPE_LAWN_MODE             2    // (1, 2) escape lawn modes to trigger escape becouse of high motormow load: mode 1 - uses mowmotorpower for triggering, mode 2 - uses rpm for triggering (2: best)
+#define ESCAPE_LAWN_MODE             1    // (1, 2) escape lawn modes to trigger escape becouse of high motormow load: mode 1 - uses mowmotorpower for triggering, mode 2 - uses rpm for triggering (2: best)
 #define CHANGE_SPEED_SET            true  // if enabled and rpm or power triggers escape lawn or a keepslow state, mower will go slow with RETRYSLOWSPEED or KEEPSLOWSPEED with configured RETRYSLOWTIME or KEEPSLOWTIME. Also, in this states MOW_RPM/PWM for _SLOW/RETRY are used for the mowmotor set
 #define MOW_POWERtr_STALL           80    // (%, only used if ESCAPE_LAWN_MODE = 1) if power of mowmotor exceeds e.g 90% of MOWPOWERMAX, escapelawn is triggered 
 #define MOW_POWERtr_SLOW            70    // (%, only used if ESCAPE_LAWN_MODE = 1) if power of mowmotor exceeds e.g 70% of MOWPOWERMAX, keepslow is triggered
@@ -333,7 +333,7 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 // shall the mow motor be activated for normal operation? Deactivate this option for GPS tests and path tracking running tests
 #define ENABLE_MOW_MOTOR true // Default is true, set false for testing purpose to switch off mow motor permanently
 
-#define MOW_FAULT_CURRENT 4.5         // mowing motor fault current (amps)
+#define MOW_FAULT_CURRENT 4.0         // mowing motor fault current (amps)
 #define MOW_TOO_LOW_CURRENT 0.005     // mowing motor too low current (amps)
 #define MOW_OVERLOAD_CURRENT 2.0      // mowing motor overload current (amps)
 #define MOW_OVERLOAD_ERROR_TIME 10000 // mowing motor overload until error time (ms)
@@ -548,15 +548,15 @@ Also, you may choose the serial port below for serial monitor output (CONSOLE).
 #define TARGET_REACHED_TOLERANCE 0.07
 
 // stanley control for path tracking - determines gain how fast to correct for lateral path errors
-#define STANLEY_CONTROL_P_NORMAL  3.6   // 3.4 // 3.0 for path tracking control (angular gain) when mowing
-#define STANLEY_CONTROL_K_NORMAL  2.1  // 2.3 // 1.0 for path tracking control (lateral gain) when mowing
+#define STANLEY_CONTROL_P_NORMAL  3.5   // 3.4 // 3.0 for path tracking control (angular gain) when mowing
+#define STANLEY_CONTROL_K_NORMAL  2.0  // 2.3 // 1.0 for path tracking control (lateral gain) when mowing
 #define STANLEY_FLOAT_P_NORMAL         1.5
 #define STANLEY_FLOAT_K_NORMAL         0.5
 
 #define STANLEY_CONTROL_P_SLOW    1.0   // 1 // 3.0 for path tracking control (angular gain) when docking tracking
 #define STANLEY_CONTROL_K_SLOW    0.5  // 0.05 // 0.1 for path tracking control (lateral gain) when mowing or docking
-#define STANLEY_FLOAT_P_SLOW           0.6
-#define STANLEY_FLOAT_K_SLOW           0.2
+#define STANLEY_FLOAT_P_SLOW           0.5
+#define STANLEY_FLOAT_K_SLOW           0.1
 
 
 
