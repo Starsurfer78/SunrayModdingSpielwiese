@@ -1,4 +1,6 @@
-# This is modded Sunray in the "quasi" state of orig Sunray ver .322
+# This is modded Sunray in the "quasi" state of orig Sunray ver .322, please use the latest release and NOT master
+
+## the master is actually used to get alfred going with it too, and it´s not ready
 
 # Sunray firmware
 
