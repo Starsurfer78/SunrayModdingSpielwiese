@@ -39,6 +39,10 @@ extern float statMowDistanceTraveled ; // meter
 extern float statTempMin;
 extern float statTempMax;
 
+// Statistikberechnung (einmal pro Loop aufrufen)
 void calcStats();
+
+// Setzt alle Statistikdaten zurück (z.B. am Tagesanfang)
+void resetStats();
 
 #endif
