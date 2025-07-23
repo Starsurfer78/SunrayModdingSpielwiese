@@ -748,105 +748,67 @@ void SerialBatteryDriver::keepPowerOn(bool flag){
   #endif  
 }
 
+// Gemeinsame Basisklasse für einfache Sensor-Driver
+class SerialSimpleSensorDriver {
+protected:
+    SerialRobotDriver &serialRobot;
+    bool SerialRobotDriver::*sensorFlag;
+public:
+    SerialSimpleSensorDriver(SerialRobotDriver &sr, bool SerialRobotDriver::*flag)
+        : serialRobot(sr), sensorFlag(flag) {}
+    void begin() {}
+    void run() {}
+    bool triggered() { return serialRobot.*sensorFlag; }
+};
 
-// ------------------------------------------------------------------------------------
+// SerialLiftSensorDriver
+class SerialLiftSensorDriver : public SerialSimpleSensorDriver {
+public:
+    SerialLiftSensorDriver(SerialRobotDriver &sr)
+        : SerialSimpleSensorDriver(sr, &SerialRobotDriver::triggeredLift) {}
+};
 
-SerialBumperDriver::SerialBumperDriver(SerialRobotDriver &sr): serialRobot(sr){
-}
+// SerialRainSensorDriver
+class SerialRainSensorDriver : public SerialSimpleSensorDriver {
+public:
+    SerialRainSensorDriver(SerialRobotDriver &sr)
+        : SerialSimpleSensorDriver(sr, &SerialRobotDriver::triggeredRain) {}
+};
 
-void SerialBumperDriver::begin(){
-}
+// SerialStopButtonDriver
+class SerialStopButtonDriver : public SerialSimpleSensorDriver {
+public:
+    SerialStopButtonDriver(SerialRobotDriver &sr)
+        : SerialSimpleSensorDriver(sr, &SerialRobotDriver::triggeredStopButton) {}
+};
 
-void SerialBumperDriver::run(){
+// SerialBumperDriver als einfacher Sensor-Driver
+class SerialBumperDriver : public SerialSimpleSensorDriver {
+public:
+    SerialBumperDriver(SerialRobotDriver &sr)
+        : SerialSimpleSensorDriver(sr, &SerialRobotDriver::triggeredLeftBumper) {}
+    // getLeftBumper und getRightBumper als eigene Methoden
+    bool getLeftBumper() { return serialRobot.triggeredLeftBumper; }
+    bool getRightBumper() { return serialRobot.triggeredRightBumper; }
+    bool obstacle() { return serialRobot.triggeredLeftBumper || serialRobot.triggeredRightBumper; }
+    void getTriggeredBumper(bool &leftBumper, bool &rightBumper) {
+        leftBumper = serialRobot.triggeredLeftBumper;
+        rightBumper = serialRobot.triggeredRightBumper;
+    }
+};
 
-}
+// Buzzer-Konstanten
+constexpr uint8_t BUZZER_I2C_ADDR = EX2_I2C_ADDR;
+constexpr uint8_t BUZZER_PORT = EX2_BUZZER_PORT;
+constexpr uint8_t BUZZER_PIN = EX2_BUZZER_PIN;
 
-bool SerialBumperDriver::obstacle(){
-  return (serialRobot.triggeredLeftBumper || serialRobot.triggeredRightBumper); 
-}
-
-bool SerialBumperDriver::getLeftBumper(){
-  return (serialRobot.triggeredLeftBumper);
-}
-
-bool SerialBumperDriver::getRightBumper(){
-  return (serialRobot.triggeredRightBumper);
-}	
-
-void SerialBumperDriver::getTriggeredBumper(bool &leftBumper, bool &rightBumper){
-  leftBumper = serialRobot.triggeredLeftBumper;
-  rightBumper = serialRobot.triggeredRightBumper;
-}  	  		    
-
-
-// ------------------------------------------------------------------------------------
-
-
-SerialStopButtonDriver::SerialStopButtonDriver(SerialRobotDriver &sr): serialRobot(sr){
-}
-
-void SerialStopButtonDriver::begin(){
-}
-
-void SerialStopButtonDriver::run(){
-
-}
-
-bool SerialStopButtonDriver::triggered(){
-  return (serialRobot.triggeredStopButton); 
-}
-
-// ------------------------------------------------------------------------------------
-
-
-SerialRainSensorDriver::SerialRainSensorDriver(SerialRobotDriver &sr): serialRobot(sr){
-}
-
-void SerialRainSensorDriver::begin(){
-}
-
-void SerialRainSensorDriver::run(){
-
-}
-
-bool SerialRainSensorDriver::triggered(){
-  return (serialRobot.triggeredRain); 
-}
-
-// ------------------------------------------------------------------------------------
-
-SerialLiftSensorDriver::SerialLiftSensorDriver(SerialRobotDriver &sr): serialRobot(sr){
-}
-
-void SerialLiftSensorDriver::begin(){
-}
-
-void SerialLiftSensorDriver::run(){
-}
-
-bool SerialLiftSensorDriver::triggered(){
-  return (serialRobot.triggeredLift);
-}
-
-
-// ------------------------------------------------------------------------------------
-
-SerialBuzzerDriver::SerialBuzzerDriver(SerialRobotDriver &sr): serialRobot(sr){
-}
-
-void SerialBuzzerDriver::begin(){
-}
-
-void SerialBuzzerDriver::run(){
-}
-
+// SerialBuzzerDriver
+SerialBuzzerDriver::SerialBuzzerDriver(SerialRobotDriver &sr): serialRobot(sr){}
+void SerialBuzzerDriver::begin(){}
+void SerialBuzzerDriver::run(){}
 void SerialBuzzerDriver::noTone(){
-  ioExpanderOut(EX2_I2C_ADDR, EX2_BUZZER_PORT, EX2_BUZZER_PIN, false);
+    ioExpanderOut(BUZZER_I2C_ADDR, BUZZER_PORT, BUZZER_PIN, false);
 }
-
 void SerialBuzzerDriver::tone(int freq){
-  ioExpanderOut(EX2_I2C_ADDR, EX2_BUZZER_PORT, EX2_BUZZER_PIN, true);
+    ioExpanderOut(BUZZER_I2C_ADDR, BUZZER_PORT, BUZZER_PIN, true);
 }
-
-
-

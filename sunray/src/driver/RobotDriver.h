@@ -11,6 +11,7 @@
 #include "../../gps.h"
 #include <Client.h>
 
+// Abstract base class for robot drivers
 class RobotDriver {
   public:    
     // ---- led states -----           
@@ -20,84 +21,109 @@ class RobotDriver {
     bool ledStateGpsFloat;
     bool ledStateShutdown;
     bool ledStateError;
+    // Initializes the robot driver
     virtual void begin() = 0;
+    // Main loop for robot driver
     virtual void run() = 0;
+    // Returns the robot ID
     virtual bool getRobotID(String &id) = 0;
+    // Returns the MCU firmware version
     virtual bool getMcuFirmwareVersion(String &name, String &ver) = 0;    
+    // Returns the CPU temperature
     virtual float getCpuTemperature() = 0;
 };
 
+// Abstract base class for motor drivers
 class MotorDriver {
   public:    
+    // Initializes the motor driver
     virtual void begin() = 0;
+    // Main loop for motor driver
     virtual void run() = 0;
-    
-    // set pwm (0-255), positive: forward, negative: backwards
+    // Sets PWM (0-255), positive: forward, negative: backwards
     virtual void setMotorPwm(int leftPwm, int rightPwm, int mowPwm) = 0;
-    // get motor faults
+    // Returns motor faults
     virtual void getMotorFaults(bool &leftFault, bool &rightFault, bool &mowFault) = 0;
-    // reset motor faults
+    // Resets motor faults
     virtual void resetMotorFaults() = 0;
-    // get motor currents (ampere)
+    // Returns motor currents (ampere)
     virtual void getMotorCurrent(float &leftCurrent, float &rightCurrent, float &mowCurrent) = 0;
-    // get motor encoder ticks
+    // Returns motor encoder ticks
     virtual void getMotorEncoderTicks(int &leftTicks, int &rightTicks, int &mowTicks) = 0; 
 };
 
-
-
+// Abstract base class for battery drivers
 class BatteryDriver {
   public:    
+    // Initializes the battery driver
     virtual void begin() = 0;
+    // Main loop for battery driver
     virtual void run() = 0;
-    
-    // read battery voltage
+    // Returns battery voltage
     virtual float getBatteryVoltage() = 0;
-    // read battery temperature (degC) 
+    // Returns battery temperature (degC) 
     virtual float getBatteryTemperature() = 0;
-    // read charge voltage
+    // Returns charge voltage
     virtual float getChargeVoltage() = 0;
-    // read charge current (amps)
+    // Returns charge current (amps)
     virtual float getChargeCurrent() = 0;
-    // enable battery charging
+    // Enables battery charging
     virtual void enableCharging(bool flag) = 0;
-    // keep system on or power-off
-    virtual void keepPowerOn(bool flag) = 0;  	  		    
+    // Keeps system on or powers off
+    virtual void keepPowerOn(bool flag) = 0;   
 };
 
+// Abstract base class for bumper drivers
 class BumperDriver {
   public:    
+    // Initializes the bumper driver
     virtual void begin() = 0;
+    // Main loop for bumper driver
     virtual void run() = 0;
+    // Checks if an obstacle is detected
     virtual bool obstacle() = 0;
+    // Returns the status of the left bumper
     virtual bool getLeftBumper() = 0;
+    // Returns the status of the right bumper
     virtual bool getRightBumper() = 0;
-    
-    // get triggered bumper
-    virtual void getTriggeredBumper(bool &leftBumper, bool &rightBumper) = 0;  	  		    
+    // Returns both bumper statuses
+    virtual void getTriggeredBumper(bool &leftBumper, bool &rightBumper) = 0;   
 };
 
+// Abstract base class for stop button drivers
 class StopButtonDriver {
   public:    
+    // Initializes the stop button driver
     virtual void begin() = 0;
+    // Main loop for stop button driver
     virtual void run() = 0;
-    virtual bool triggered() = 0;  	  		    
+    // Returns the status of the stop button
+    virtual bool triggered() = 0;   
 };
 
+// Abstract base class for lift sensor drivers
 class LiftSensorDriver {
   public:    
+    // Initializes the lift sensor driver
     virtual void begin() = 0;
+    // Main loop for lift sensor driver
     virtual void run() = 0;
-    virtual bool triggered() = 0;  	  		    
+    // Returns the status of the lift sensor
+    virtual bool triggered() = 0;   
 };
 
+// Abstract base class for rain sensor drivers
 class RainSensorDriver {
   public:    
+    // Initializes the rain sensor driver
     virtual void begin() = 0;
+    // Main loop for rain sensor driver
     virtual void run() = 0;
-    virtual bool triggered() = 0;  	  		    
+    // Returns the status of the rain sensor
+    virtual bool triggered() = 0;   
 };
 
+// Abstract base class for IMU drivers
 class ImuDriver {
   public:
     float quatW; // quaternion
@@ -112,25 +138,32 @@ class ImuDriver {
     float ay; //MrTree y-Acceleration of IMU
     float az; //MrTree z-Acceleration of IMU
     bool imuFound;   
-    // detect module (should update member 'imuFound')
+    // Detects the IMU module (should update member 'imuFound')
     virtual void detect() = 0;             
-    // try starting module with update rate 5 Hz (should return true on success)
+    // Starts the IMU module with update rate 5 Hz (should return true on success)
     virtual bool begin() = 0;    
+    // Main loop for IMU driver
     virtual void run() = 0;
-    // check if data has been updated (should update members roll, pitch, yaw)
+    // Checks if data has been updated (should update members roll, pitch, yaw)
     virtual bool isDataAvail() = 0;
-    // reset module data queue (should reset module FIFO etc.)         
+    // Resets module data queue (should reset module FIFO etc.)         
     virtual void resetData() = 0;        
 };
 
+// Abstract base class for buzzer drivers
 class BuzzerDriver {
   public:    
+    // Initializes the buzzer driver
     virtual void begin() = 0;
+    // Main loop for buzzer driver
     virtual void run() = 0;
-    virtual void noTone() = 0;  	  		      
+    // Turns the buzzer off
+    virtual void noTone() = 0;   
+    // Turns the buzzer on
     virtual void tone(int freq) = 0;
 };
 
+// Abstract base class for GPS drivers
 class GpsDriver {
   public:
     unsigned long iTOW; //  An interval time of week (ITOW), ms since Saturday/Sunday transition
@@ -160,28 +193,28 @@ class GpsDriver {
     int mins;          // UTC time minute (0..59)
     int sec;           // UTC time second (0..60) (incl. leap second)
     int dayOfWeek;     // UTC dayOfWeek (0=Monday)
-    // start tcp receiver
+    // Starts TCP receiver
     virtual void begin(Client &client, char *host, uint16_t port) = 0;
-    // start serial receiver          
+    // Starts serial receiver          
     virtual void begin(HardwareSerial& bus,uint32_t baud) = 0;
-    // should process receiver data
+    // Main loop for GPS driver
     virtual void run() = 0;    
-    // should configure receiver    
+    // Configures the receiver    
     virtual bool configure() = 0; 
-    // should reboot receiver
+    // Reboots the receiver
     virtual void reboot() = 0;
 
-    // decodes iTOW into hour, min, sec and dayOfWeek(0=Monday)
-    virtual void decodeTOW(){ 
-      long towMin = iTOW / 1000 / 60;  // convert milliseconds to minutes since GPS week start      
-      dayOfWeek = ((towMin / 1440)+6) % 7; // GPS week starts at Saturday/Sunday transition   
-      unsigned long totalMin = towMin % 1440; // total minutes of current day  
-      hour = totalMin / 60; 
-      mins = totalMin % 60; 
-    }
+    // Decodes iTOW into hour, min, sec and dayOfWeek(0=Monday)
+    virtual void decodeTOW();
 };
 
-
+inline void GpsDriver::decodeTOW() {
+    long towMin = iTOW / 1000 / 60;  // convert milliseconds to minutes since GPS week start
+    dayOfWeek = ((towMin / 1440)+6) % 7; // GPS week starts at Saturday/Sunday transition
+    unsigned long totalMin = towMin % 1440; // total minutes of current day
+    hour = totalMin / 60;
+    mins = totalMin % 60;
+}
 
 #endif
 

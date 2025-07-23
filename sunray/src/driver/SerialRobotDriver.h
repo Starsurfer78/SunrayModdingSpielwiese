@@ -42,19 +42,33 @@ class SerialRobotDriver: public RobotDriver {
     bool triggeredLift;
     bool triggeredRain;
     bool triggeredStopButton;
+    // Initializes the robot driver and serial communication
     void begin() override;
+    // Main loop: processes communication and controls hardware
     void run() override;
+    // Returns the robot ID
     bool getRobotID(String &id) override;
+    // Returns the MCU firmware version
     bool getMcuFirmwareVersion(String &name, String &ver) override;
+    // Returns the CPU temperature
     float getCpuTemperature() override;
+    // Sends PWM values to the motors
     void requestMotorPwm(int leftPwm, int rightPwm, int mowPwm);
+    // Requests status summary from MCU
     void requestSummary();
+    // Requests firmware version from MCU
     void requestVersion();
+    // Updates the panel LED display
     void updatePanelLEDs();
+    // Updates the CPU temperature
     void updateCpuTemperature();
+    // Updates the WiFi connection state
     void updateWifiConnectionState();
+    // Sets the state of a panel LED
     bool setLedState(int ledNumber, bool greenState, bool redState);
+    // Turns the fan on/off
     bool setFanPowerState(bool state);
+    // Turns the IMU module on/off
     bool setImuPowerState(bool state);
   protected:    
     bool ledPanelInstalled;
@@ -74,32 +88,40 @@ class SerialRobotDriver: public RobotDriver {
     int cmdSummaryCounter;
     int cmdMotorResponseCounter;
     int cmdSummaryResponseCounter;
+    // Sends a command to the MCU
     void sendRequest(String s);
+    // Processes incoming serial data
     void processComm();
+    // Processes a received response
     void processResponse(bool checkCrc);
+    // Processes motor status response
     void motorResponse();
+    // Processes status summary response
     void summaryResponse();
+    // Processes firmware version response
     void versionResponse();
 };
 
 class SerialMotorDriver: public MotorDriver {
-  public:        
-    unsigned long lastEncoderTicksLeft;
-    unsigned long lastEncoderTicksRight; 
-    unsigned long lastEncoderTicksMow;     
-    SerialRobotDriver &serialRobot;
-    SerialMotorDriver(SerialRobotDriver &sr);
+  public:
+    // Initializes the motor driver
     void begin() override;
+    // Main loop for motor driver
     void run() override;
+    // Sets PWM values for the motors
     void setMotorPwm(int leftPwm, int rightPwm, int mowPwm) override;
+    // Returns fault status of the motors
     void getMotorFaults(bool &leftFault, bool &rightFault, bool &mowFault) override;
+    // Resets motor faults
     void resetMotorFaults()  override;
+    // Returns current values for the motors
     void getMotorCurrent(float &leftCurrent, float &rightCurrent, float &mowCurrent) override;
+    // Returns encoder ticks for the motors
     void getMotorEncoderTicks(int &leftTicks, int &rightTicks, int &mowTicks) override;
 };
 
 class SerialBatteryDriver : public BatteryDriver {
-  public:   
+  public:
     float batteryTemp;
     bool mcuBoardPoweredOn;
     unsigned long nextTempTime;
@@ -111,64 +133,87 @@ class SerialBatteryDriver : public BatteryDriver {
     #endif
     SerialRobotDriver &serialRobot;
     SerialBatteryDriver(SerialRobotDriver &sr);
+    // Initializes the battery driver
     void begin() override;
+    // Main loop for battery driver
     void run() override;    
+    // Returns battery voltage
     float getBatteryVoltage() override;
+    // Returns charge voltage
     float getChargeVoltage() override;
+    // Returns charge current
     float getChargeCurrent() override;    
+    // Returns battery temperature
     float getBatteryTemperature() override;    
+    // Enables/disables charging
     virtual void enableCharging(bool flag) override;
+    // Keeps power on
     virtual void keepPowerOn(bool flag) override;
+    // Updates battery temperature
     void updateBatteryTemperature();
 };
 
-class SerialBumperDriver: public BumperDriver {
-  public:    
+// Common base class for simple sensor drivers
+class SerialSimpleSensorDriver {
+public:
     SerialRobotDriver &serialRobot;
-    SerialBumperDriver(SerialRobotDriver &sr);
-    void begin() override;
-    void run() override;
-    bool obstacle() override;
-    bool getLeftBumper() override;
-    bool getRightBumper() override;
-    void getTriggeredBumper(bool &leftBumper, bool &rightBumper) override;  	  		    
+    // Initializes the sensor driver
+    SerialSimpleSensorDriver(SerialRobotDriver &sr);
+    // Main loop for sensor driver
+    void begin();
+    void run();
+    // Returns the sensor status
+    bool triggered();
 };
 
-class SerialStopButtonDriver: public StopButtonDriver {
-  public:    
-    SerialRobotDriver &serialRobot;
+class SerialLiftSensorDriver : public SerialSimpleSensorDriver {
+public:
+    // Constructor for lift sensor
+    SerialLiftSensorDriver(SerialRobotDriver &sr);
+};
+
+class SerialRainSensorDriver : public SerialSimpleSensorDriver {
+public:
+    // Constructor for rain sensor
+    SerialRainSensorDriver(SerialRobotDriver &sr);
+};
+
+class SerialStopButtonDriver : public SerialSimpleSensorDriver {
+public:
+    // Constructor for stop button
     SerialStopButtonDriver(SerialRobotDriver &sr);
-    void begin() override;
-    void run() override;
-    bool triggered() override;  	  		    
 };
 
-class SerialRainSensorDriver: public RainSensorDriver {
-  public:    
+class SerialBumperDriver: public BumperDriver {
+public:
     SerialRobotDriver &serialRobot;
-    SerialRainSensorDriver(SerialRobotDriver &sr);    
+    // Initializes the bumper driver
+    SerialBumperDriver(SerialRobotDriver &sr);
+    // Main loop for bumper driver
     void begin() override;
     void run() override;
-    bool triggered() override;  
-};
-
-class SerialLiftSensorDriver: public LiftSensorDriver {
-  public:    
-    SerialRobotDriver &serialRobot;
-    SerialLiftSensorDriver(SerialRobotDriver &sr);    
-    void begin() override;
-    void run() override;
-    bool triggered() override;  
+    // Checks if an obstacle is detected
+    bool obstacle() override;
+    // Returns the status of the left bumper
+    bool getLeftBumper() override;
+    // Returns the status of the right bumper
+    bool getRightBumper() override;
+    // Returns both bumper statuses
+    void getTriggeredBumper(bool &leftBumper, bool &rightBumper) override;
 };
 
 class SerialBuzzerDriver: public BuzzerDriver {
-  public:    
+public:
     SerialRobotDriver &serialRobot;
-    SerialBuzzerDriver(SerialRobotDriver &sr);    
+    // Initializes the buzzer driver
+    SerialBuzzerDriver(SerialRobotDriver &sr);
+    // Main loop for buzzer driver
     void begin() override;
     void run() override;
+    // Turns the buzzer off
     void noTone() override;
-    void tone(int freq) override;  
+    // Turns the buzzer on
+    void tone(int freq) override;
 };
 
 
